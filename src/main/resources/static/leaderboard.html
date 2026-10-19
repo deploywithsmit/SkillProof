@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Leaderboard — SkillProof</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%236366f1' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z'/></svg>">
+  <link rel="stylesheet" href="/css/tokens.css">
+  <link rel="stylesheet" href="/css/main.css">
+  <style>
+    .rank-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 28px;
+      height: 28px;
+      border-radius: var(--radius-full);
+      font-weight: 700;
+      font-size: var(--text-xs);
+    }
+    .rank-1 {
+      background: linear-gradient(135deg, #f59e0b, #d97706);
+      color: #ffffff;
+      box-shadow: 0 0 10px rgba(245, 158, 11, 0.4);
+    }
+    .rank-2 {
+      background: linear-gradient(135deg, #94a3b8, #64748b);
+      color: #ffffff;
+    }
+    .rank-3 {
+      background: linear-gradient(135deg, #b45309, #78350f);
+      color: #ffffff;
+    }
+    .rank-other {
+      background-color: var(--bg-surface-elevated);
+      color: var(--text-secondary);
+    }
+  </style>
+</head>
+<body>
+
+  <div class="app-layout">
+    <aside class="sidebar" id="app-sidebar"></aside>
+
+    <div class="app-main">
+      <header class="topbar">
+        <div class="topbar-left">
+          <button class="mobile-menu-btn" id="mobile-menu-toggle" aria-label="Toggle navigation">
+            <span data-icon="menu" data-icon-size="20"></span>
+          </button>
+          <h1 class="page-title-crumb">Community Leaderboard</h1>
+        </div>
+        <div class="topbar-right">
+          <button class="icon-btn theme-toggle-btn" aria-label="Toggle theme"></button>
+        </div>
+      </header>
+
+      <main class="page-container">
+        <!-- Top Stats / Hero Banner -->
+        <div class="card" style="margin-bottom: var(--space-6); background: linear-gradient(145deg, var(--bg-surface), var(--bg-surface-elevated));">
+          <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: var(--space-4);">
+            <div>
+              <div style="display: flex; align-items: center; gap: var(--space-2); margin-bottom: var(--space-1);">
+                <span data-icon="trophy" data-icon-size="24" style="color: #f59e0b;"></span>
+                <h2 style="font-size: var(--text-xl); font-weight: 800;">Practical Merit Rankings</h2>
+              </div>
+              <p style="font-size: var(--text-sm); color: var(--text-secondary); max-width: 600px;">
+                Rankings are based strictly on peer-reviewed challenge implementations and verified skill milestones.
+              </p>
+            </div>
+            <div>
+              <button id="formula-modal-btn" class="btn btn-secondary btn-sm">
+                <span data-icon="info" data-icon-size="14"></span>
+                <span>Scoring Formula & Privacy</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Leaderboard Table Card -->
+        <div class="card">
+          <div class="table-container">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th style="width: 60px; text-align: center;">Rank</th>
+                  <th>Developer</th>
+                  <th>Total Points</th>
+                  <th>Approved Challenges</th>
+                  <th>Verified Skills</th>
+                  <th>Avg Review Score</th>
+                  <th style="text-align: right;">Profile</th>
+                </tr>
+              </thead>
+              <tbody id="leaderboard-tbody">
+                <!-- Dynamic ranking rows -->
+              </tbody>
+            </table>
+          </div>
+
+          <div id="leaderboard-empty" style="display: none; padding: var(--space-8); text-align: center;">
+            <div class="empty-state-icon"><span data-icon="trophy" data-icon-size="36"></span></div>
+            <p style="font-size: var(--text-sm); color: var(--text-secondary);">
+              No active students currently listed on the public leaderboard.
+            </p>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <!-- Scoring Formula Modal -->
+  <div class="modal-backdrop" id="formula-modal">
+    <div class="modal-content" style="max-width: 580px;">
+      <div class="modal-header">
+        <div style="display: flex; align-items: center; gap: var(--space-2);">
+          <span data-icon="calculator" data-icon-size="20" style="color: var(--accent-primary);"></span>
+          <h3 style="font-size: var(--text-base); font-weight: 700;">Transparent Scoring Formula</h3>
+        </div>
+        <button class="icon-btn" id="formula-modal-close" style="border: none;">
+          <span data-icon="x" data-icon-size="18"></span>
+        </button>
+      </div>
+
+      <div class="modal-body">
+        <p style="font-size: var(--text-sm); color: var(--text-secondary); line-height: 1.6; margin-bottom: var(--space-4);">
+          SkillProof maintains a 100% transparent, tamper-proof ranking algorithm. There are no opaque karma points or activity vanity streaks.
+        </p>
+
+        <div style="background-color: var(--bg-surface-elevated); padding: var(--space-4); border-radius: var(--radius-md); margin-bottom: var(--space-5); display: flex; flex-direction: column; gap: var(--space-3); font-size: var(--text-xs);">
+          <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-subtle); padding-bottom: var(--space-2);">
+            <div>
+              <strong style="color: var(--text-primary); font-size: var(--text-sm);">1. Challenge Points</strong>
+              <div style="color: var(--text-muted); margin-top: 2px;">Awarded upon mentor approval (deduplicated per challenge)</div>
+            </div>
+            <span class="badge badge-neutral" style="font-weight: 700;">Challenge Defined (20 - 75 pts)</span>
+          </div>
+
+          <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-subtle); padding-bottom: var(--space-2);">
+            <div>
+              <strong style="color: var(--text-primary); font-size: var(--text-sm);">2. Verified Skill Bonus</strong>
+              <div style="color: var(--text-muted); margin-top: 2px;">Bonus granted for each cryptographic skill badge earned</div>
+            </div>
+            <span class="badge badge-success" style="font-weight: 700;">+50 pts per Badge</span>
+          </div>
+
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div>
+              <strong style="color: var(--text-primary); font-size: var(--text-sm);">Total Formula</strong>
+            </div>
+            <code style="font-family: var(--font-mono); font-weight: 700; color: var(--accent-primary);">Total = Σ(Challenge Pts) + (Verified Skills × 50)</code>
+          </div>
+        </div>
+
+        <div style="background-color: rgba(99, 102, 241, 0.08); border-left: 3px solid var(--color-primary); padding: var(--space-3) var(--space-4); border-radius: 0 var(--radius-md) var(--radius-md) 0; font-size: var(--text-xs); color: var(--text-secondary); line-height: 1.5;">
+          <strong style="color: var(--text-primary);">Privacy & Opt-Out Policy:</strong> Students can choose to hide their profile from the public leaderboard at any time via <strong>Settings &rarr; Privacy & Visibility</strong>. Opting out removes you from the public rankings while preserving all verified credentials and challenge records.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="/js/icons.js"></script>
+  <script src="/js/toast.js"></script>
+  <script src="/js/theme.js"></script>
+  <script src="/js/api.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', async () => {
+      initTheme();
+      replaceIcons();
+
+      const user = await SkillProof.fetchCurrentUser();
+      if (user) {
+        SkillProof.renderAppSidebar('leaderboard');
+        SkillProof.initTopbar();
+      } else {
+        const sidebar = document.getElementById('app-sidebar');
+        if (sidebar) sidebar.style.display = 'none';
+        const topbarLeft = document.querySelector('.topbar-left');
+        if (topbarLeft) {
+          topbarLeft.innerHTML = `
+            <a href="/index.html" class="brand-logo" style="display: flex; align-items: center; gap: 8px;">
+              <div class="brand-icon" style="background-color: var(--color-primary); color: white; width: 28px; height: 28px; border-radius: var(--radius-sm); display: flex; align-items: center; justify-content: center;">
+                <span data-icon="shield" data-icon-size="16"></span>
+              </div>
+              <span style="font-weight: 700; font-size: var(--text-base);">SkillProof</span>
+            </a>
+          `;
+        }
+      }
+      replaceIcons();
+
+      const tbody = document.getElementById('leaderboard-tbody');
+      const emptyState = document.getElementById('leaderboard-empty');
+      const formulaModal = document.getElementById('formula-modal');
+      const formulaBtn = document.getElementById('formula-modal-btn');
+      const formulaClose = document.getElementById('formula-modal-close');
+
+      formulaBtn.addEventListener('click', () => {
+        formulaModal.classList.add('open');
+        replaceIcons();
+      });
+      formulaClose.addEventListener('click', () => formulaModal.classList.remove('open'));
+      formulaModal.addEventListener('click', (e) => {
+        if (e.target === formulaModal) formulaModal.classList.remove('open');
+      });
+
+      async function loadLeaderboard() {
+        tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; padding: var(--space-6); color: var(--text-secondary);">Calculating community rankings...</td></tr>`;
+
+        try {
+          const res = await SkillProof.apiFetch('/api/v1/leaderboard');
+          const entries = (res && res.data) ? res.data : [];
+
+          if (entries.length === 0) {
+            tbody.innerHTML = '';
+            emptyState.style.display = 'block';
+            replaceIcons();
+            return;
+          }
+
+          emptyState.style.display = 'none';
+          tbody.innerHTML = entries.map(entry => {
+            let rankClass = 'rank-other';
+            if (entry.rank === 1) rankClass = 'rank-1';
+            else if (entry.rank === 2) rankClass = 'rank-2';
+            else if (entry.rank === 3) rankClass = 'rank-3';
+
+            const initials = entry.fullName ? 
+              entry.fullName.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase() : 'SP';
+
+            const avgScoreStr = entry.averageScore != null ? `${Math.round(entry.averageScore)}%` : '&mdash;';
+
+            return `
+              <tr>
+                <td style="text-align: center;">
+                  <span class="rank-badge ${rankClass}">${entry.rank}</span>
+                </td>
+                <td>
+                  <div style="display: flex; align-items: center; gap: var(--space-3);">
+                    <div class="user-avatar" style="width: 34px; height: 34px; font-size: var(--text-xs);">${initials}</div>
+                    <div>
+                      <a href="/profile.html?user=${encodeURIComponent(entry.username)}" style="font-weight: 600; color: var(--text-primary); text-decoration: none;">
+                        ${entry.fullName}
+                      </a>
+                      <div style="font-size: var(--text-xs); color: var(--text-secondary);">@${entry.username}</div>
+                    </div>
+                  </div>
+                </td>
+                <td>
+                  <span style="font-weight: 800; font-size: var(--text-sm); color: var(--color-primary-light);">
+                    ${entry.totalPoints} pts
+                  </span>
+                </td>
+                <td>
+                  <span class="badge badge-neutral">${entry.approvedChallengesCount} passed</span>
+                </td>
+                <td>
+                  <span class="badge badge-success">${entry.verifiedSkillsCount} verified</span>
+                </td>
+                <td style="font-weight: 600; color: var(--text-secondary); font-size: var(--text-xs);">
+                  ${avgScoreStr}
+                </td>
+                <td style="text-align: right;">
+                  <a href="/profile.html?user=${encodeURIComponent(entry.username)}" class="btn btn-secondary btn-sm">
+                    <span data-icon="external-link" data-icon-size="14"></span>
+                    <span>View</span>
+                  </a>
+                </td>
+              </tr>
+            `;
+          }).join('');
+
+          replaceIcons();
+        } catch (err) {
+          tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; padding: var(--space-6); color: var(--color-danger);">Failed to load leaderboard.</td></tr>`;
+          showToast(err.message || 'Failed to load leaderboard', 'error');
+        }
+      }
+
+      await loadLeaderboard();
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard — SkillProof</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%236366f1' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z'/></svg>">
+  <link rel="stylesheet" href="/css/tokens.css">
+  <link rel="stylesheet" href="/css/main.css">
+</head>
+<body>
+
+  <div class="app-layout">
+    <!-- Sidebar Container -->
+    <aside class="sidebar" id="app-sidebar"></aside>
+
+    <!-- Main Workspace -->
+    <div class="app-main">
+      <!-- Sticky Topbar -->
+      <header class="topbar">
+        <div class="topbar-left">
+          <button class="mobile-menu-btn" id="mobile-menu-toggle" aria-label="Toggle Navigation">
+            <span data-icon="menu" data-icon-size="20"></span>
+          </button>
+          <h1 class="page-title-crumb">Overview</h1>
+        </div>
+
+        <div class="topbar-right">
+          <button class="icon-btn theme-toggle-btn" aria-label="Toggle theme"></button>
+          <a href="/notifications.html" class="icon-btn" id="notification-bell" title="Notifications" style="display: none;">
+            <span data-icon="bell" data-icon-size="18"></span>
+            <span class="badge-dot" id="notification-dot" style="display: none;"></span>
+          </a>
+        </div>
+      </header>
+
+      <!-- Page Content -->
+      <main class="page-container">
+        <!-- Welcome Banner -->
+        <div style="margin-bottom: var(--space-8); display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: var(--space-4);">
+          <div>
+            <h2 style="font-size: var(--text-2xl); font-weight: 700; letter-spacing: -0.5px; color: var(--text-primary);" id="welcome-text">
+              Welcome back
+            </h2>
+            <p style="font-size: var(--text-sm); color: var(--text-secondary); margin-top: 4px;">
+              Track your practical competencies, submissions, and verified credentials.
+            </p>
+          </div>
+          <a href="/challenges.html" class="btn btn-primary">
+            <span data-icon="plus" data-icon-size="16"></span>
+            <span>New Challenge Submission</span>
+          </a>
+        </div>
+
+        <!-- Metrics Grid -->
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-header">
+              <span>Skills Pursued</span>
+              <div class="stat-icon"><span data-icon="compass" data-icon-size="16"></span></div>
+            </div>
+            <div class="stat-value" id="metric-skills">0</div>
+            <div class="stat-caption">In progress or mastered</div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-header">
+              <span>Approved Challenges</span>
+              <div class="stat-icon" style="background-color: var(--color-success-subtle); color: var(--color-success-text);"><span data-icon="check-circle" data-icon-size="16"></span></div>
+            </div>
+            <div class="stat-value" id="metric-completed">0</div>
+            <div class="stat-caption">Peer-reviewed and approved</div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-header">
+              <span>Pending Submissions</span>
+              <div class="stat-icon" style="background-color: var(--color-warning-subtle); color: var(--color-warning-text);"><span data-icon="clock" data-icon-size="16"></span></div>
+            </div>
+            <div class="stat-value" id="metric-pending">0</div>
+            <div class="stat-caption">Under mentor review</div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-header">
+              <span>Verified Skills</span>
+              <div class="stat-icon" style="background-color: var(--accent-subtle); color: var(--accent-text);"><span data-icon="award" data-icon-size="16"></span></div>
+            </div>
+            <div class="stat-value" id="metric-verified">0</div>
+            <div class="stat-caption">Cryptographic credential badges</div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-header">
+              <span>Merit Points</span>
+              <div class="stat-icon"><span data-icon="trophy" data-icon-size="16"></span></div>
+            </div>
+            <div class="stat-value" id="metric-points">0</div>
+            <div class="stat-caption">Leaderboard score</div>
+          </div>
+        </div>
+
+        <!-- Two Column Content Grid -->
+        <div style="display: grid; grid-template-columns: 2fr 1.2fr; gap: var(--space-8); margin-bottom: var(--space-8);" class="dash-grid">
+          
+          <!-- Left Column: Active Skills & Recommendations -->
+          <div style="display: flex; flex-direction: column; gap: var(--space-8);">
+            
+            <!-- In Progress Skills -->
+            <div class="card">
+              <div class="card-header">
+                <div>
+                  <h3 class="card-title">Current Skill Progression</h3>
+                  <p class="card-subtitle">Skills you are actively completing practical tasks for</p>
+                </div>
+                <a href="/skills.html" class="btn btn-outline btn-sm">Explore More</a>
+              </div>
+
+              <div id="skills-progress-list" style="display: flex; flex-direction: column; gap: var(--space-4);">
+                <!-- Dynamic Content or Empty State -->
+              </div>
+            </div>
+
+            <!-- Explainable Recommendations -->
+            <div class="card">
+              <div class="card-header">
+                <div>
+                  <h3 class="card-title">Recommended Next Milestones</h3>
+                  <p class="card-subtitle">Calculated by the dependency engine based on your completed prerequisites</p>
+                </div>
+              </div>
+
+              <div id="recommendations-list" style="display: grid; grid-template-columns: 1fr; gap: var(--space-3);">
+                <!-- Dynamic Content -->
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Right Column: Recent Feedback & Timeline -->
+          <div style="display: flex; flex-direction: column; gap: var(--space-8);">
+            
+            <!-- Mentor Feedback -->
+            <div class="card">
+              <div class="card-header">
+                <div>
+                  <h3 class="card-title">Recent Mentor Feedback</h3>
+                  <p class="card-subtitle">Rubric scores and evaluation notes</p>
+                </div>
+                <a href="/submissions.html" class="btn btn-outline btn-sm">All</a>
+              </div>
+
+              <div id="feedback-list" style="display: flex; flex-direction: column; gap: var(--space-4);">
+                <!-- Dynamic Content -->
+              </div>
+            </div>
+
+            <!-- Milestone Activity Timeline -->
+            <div class="card">
+              <div class="card-header">
+                <div>
+                  <h3 class="card-title">Recent Activity</h3>
+                  <p class="card-subtitle">Chronological record of verified submissions</p>
+                </div>
+              </div>
+
+              <div id="activity-timeline" style="display: flex; flex-direction: column; gap: var(--space-3);">
+                <!-- Dynamic Timeline Items -->
+              </div>
+            </div>
+
+          </div>
+
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <script src="/js/icons.js"></script>
+  <script src="/js/theme.js"></script>
+  <script src="/js/toast.js"></script>
+  <script src="/js/api.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', async () => {
+      // 1. Verify User Authentication
+      const user = await SkillProof.fetchCurrentUser();
+      if (!user) {
+        window.location.href = '/auth.html?step=login';
+        return;
+      }
+
+      // Render Sidebar and Topbar
+      SkillProof.renderAppSidebar('dashboard');
+      SkillProof.initTopbar();
+
+      document.getElementById('welcome-text').textContent = `Welcome back, ${user.fullName}`;
+
+      // 2. Fetch Dashboard Overview Metrics from Backend
+      try {
+        const res = await SkillProof.apiFetch('/api/v1/dashboard/overview');
+        const data = res.data;
+
+        // Render Metric Counters
+        document.getElementById('metric-skills').textContent = data.skillsPursuedCount;
+        document.getElementById('metric-completed').textContent = data.challengesCompletedCount;
+        document.getElementById('metric-pending').textContent = data.pendingSubmissionsCount;
+        document.getElementById('metric-verified').textContent = data.verifiedSkillsCount;
+        document.getElementById('metric-points').textContent = data.totalPoints;
+
+        // Render Skills Progress List
+        const skillsContainer = document.getElementById('skills-progress-list');
+        if (data.inProgressSkills && data.inProgressSkills.length > 0) {
+          skillsContainer.innerHTML = data.inProgressSkills.map(s => `
+            <div style="background-color: var(--bg-surface-elevated); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: var(--space-4);">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-2);">
+                <div style="display: flex; align-items: center; gap: var(--space-2);">
+                  <span style="color: var(--accent-text);">${getIcon(s.iconName || 'code', 18)}</span>
+                  <strong style="font-size: var(--text-sm);">${escapeHtml(s.name)}</strong>
+                  <span class="badge badge-neutral" style="font-size: 10px;">${s.difficulty}</span>
+                </div>
+                <span class="badge ${s.userStatus === 'VERIFIED' ? 'badge-success' : 'badge-primary'}">${s.userStatus}</span>
+              </div>
+              <div style="display: flex; align-items: center; gap: var(--space-3); margin-top: var(--space-2);">
+                <div class="progress-bar-container" style="flex: 1;">
+                  <div class="progress-bar-fill" style="width: ${s.progressPercent}%;"></div>
+                </div>
+                <span style="font-size: var(--text-xs); color: var(--text-muted); font-family: var(--font-mono);">${s.progressPercent}%</span>
+              </div>
+            </div>
+          `).join('');
+        } else {
+          skillsContainer.innerHTML = `
+            <div class="empty-state">
+              <div class="empty-state-icon">${getIcon('compass', 40)}</div>
+              <div class="empty-state-title">No skills in progress yet</div>
+              <div class="empty-state-desc">Explore the skills catalogue to start your practical learning path.</div>
+              <a href="/skills.html" class="btn btn-primary btn-sm">Explore Skills Catalogue</a>
+            </div>
+          `;
+        }
+
+        // Render Explainable Recommendations
+        const recContainer = document.getElementById('recommendations-list');
+        if (data.recommendations && data.recommendations.length > 0) {
+          recContainer.innerHTML = data.recommendations.map(r => `
+            <div style="background-color: var(--bg-surface-elevated); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: var(--space-4); display: flex; justify-content: space-between; align-items: center; gap: var(--space-3);">
+              <div style="display: flex; align-items: flex-start; gap: var(--space-3);">
+                <div style="background-color: var(--accent-subtle); color: var(--accent-text); padding: 8px; border-radius: var(--radius-md);">
+                  ${getIcon(r.iconName || 'code', 18)}
+                </div>
+                <div>
+                  <div style="font-size: var(--text-sm); font-weight: 600;">${escapeHtml(r.name)}</div>
+                  <div style="font-size: var(--text-xs); color: var(--text-secondary); margin-top: 2px;">
+                    ${escapeHtml(r.explanation)}
+                  </div>
+                </div>
+              </div>
+              <a href="/skills.html?search=${encodeURIComponent(r.name)}" class="btn btn-outline btn-sm" style="flex-shrink: 0;">
+                <span>View</span>
+                ${getIcon('arrow-right', 14)}
+              </a>
+            </div>
+          `).join('');
+        } else {
+          recContainer.innerHTML = `<p style="font-size: var(--text-sm); color: var(--text-muted);">No recommendations at this time.</p>`;
+        }
+
+        // Render Recent Feedback
+        const feedbackContainer = document.getElementById('feedback-list');
+        if (data.recentFeedback && data.recentFeedback.length > 0) {
+          feedbackContainer.innerHTML = data.recentFeedback.map(f => {
+            const isApproved = f.status === 'APPROVED';
+            return `
+              <div style="background-color: var(--bg-surface-elevated); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: var(--space-4);">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-2);">
+                  <strong style="font-size: var(--text-sm);">${escapeHtml(f.challengeTitle)}</strong>
+                  <span class="badge ${isApproved ? 'badge-success' : 'badge-warning'}">${f.status}</span>
+                </div>
+                <div style="font-size: var(--text-xs); color: var(--text-secondary); margin-bottom: var(--space-2); line-height: 1.5;">
+                  "${escapeHtml(f.generalFeedback || 'No written feedback.')}"
+                </div>
+                <div style="font-size: 11px; color: var(--text-muted); display: flex; justify-content: space-between;">
+                  <span>Reviewer: ${escapeHtml(f.reviewerName || 'Mentor')}</span>
+                  <span>Score: ${f.totalScore !== null ? f.totalScore : '—'}</span>
+                </div>
+              </div>
+            `;
+          }).join('');
+        } else {
+          feedbackContainer.innerHTML = `
+            <div style="text-align: center; padding: var(--space-6); color: var(--text-muted); font-size: var(--text-sm);">
+              No mentor reviews yet. Submit a challenge to receive rubric evaluations.
+            </div>
+          `;
+        }
+
+        // Render Activity Timeline
+        const activityContainer = document.getElementById('activity-timeline');
+        if (data.recentActivities && data.recentActivities.length > 0) {
+          activityContainer.innerHTML = data.recentActivities.map(act => `
+            <div style="display: flex; gap: var(--space-3); font-size: var(--text-xs); align-items: flex-start;">
+              <span style="color: var(--accent-text); margin-top: 2px;">${getIcon('check-circle', 14)}</span>
+              <div>
+                <div style="color: var(--text-primary); font-weight: 500;">${escapeHtml(act.description)}</div>
+                <div style="color: var(--text-muted); font-size: 10px; margin-top: 1px;">
+                  ${new Date(act.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                </div>
+              </div>
+            </div>
+          `).join('');
+        } else {
+          activityContainer.innerHTML = `<p style="font-size: var(--text-xs); color: var(--text-muted);">No activity recorded yet.</p>`;
+        }
+
+      } catch (err) {
+        showToast('Failed to load dashboard overview: ' + err.message, 'error');
+      }
+    });
+  </script>
+</body>
+</html>

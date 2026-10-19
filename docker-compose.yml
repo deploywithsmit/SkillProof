@@ -1,0 +1,72 @@
+services:
+  # MySQL 8 Database Service
+  mysql:
+    image: mysql:8.0
+    container_name: skillproof-mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: root_secret_password
+      MYSQL_DATABASE: skillproof_db
+      MYSQL_USER: skillproof
+      MYSQL_PASSWORD: skillproof_secret
+    ports:
+      - "${MYSQL_PORT:-3307}:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "skillproof", "-pskillproof_secret"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    networks:
+      - skillproof-net
+
+  # Local Mailpit (SMTP server + Web UI for testing OTP delivery)
+  mailpit:
+    image: axllent/mailpit:latest
+    container_name: skillproof-mailpit
+    restart: unless-stopped
+    ports:
+      - "1025:1025"   # SMTP port
+      - "8025:8025"   # Web UI for reading sent emails
+    networks:
+      - skillproof-net
+
+  # SkillProof Spring Boot Application
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: skillproof-app
+    restart: unless-stopped
+    depends_on:
+      mysql:
+        condition: service_healthy
+      mailpit:
+        condition: service_started
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/skillproof_db?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+      SPRING_DATASOURCE_USERNAME: skillproof
+      SPRING_DATASOURCE_PASSWORD: skillproof_secret
+      SPRING_MAIL_HOST: mailpit
+      SPRING_MAIL_PORT: 1025
+      SPRING_MAIL_USERNAME: ""
+      SPRING_MAIL_PASSWORD: ""
+      APP_STORAGE_UPLOAD_DIR: /app/uploads
+      SERVER_PORT: 8080
+    ports:
+      - "8080:8080"
+    volumes:
+      - app_uploads:/app/uploads
+    networks:
+      - skillproof-net
+
+volumes:
+  mysql_data:
+  app_uploads:
+
+networks:
+  skillproof-net:
+    driver: bridge

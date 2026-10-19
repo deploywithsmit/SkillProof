@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Practical Challenges — SkillProof</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%236366f1' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z'/></svg>">
+  <link rel="stylesheet" href="/css/tokens.css">
+  <link rel="stylesheet" href="/css/main.css">
+</head>
+<body>
+
+  <div class="app-layout">
+    <aside class="sidebar" id="app-sidebar"></aside>
+
+    <div class="app-main">
+      <header class="topbar">
+        <div class="topbar-left">
+          <button class="mobile-menu-btn" id="mobile-menu-toggle" aria-label="Toggle navigation">
+            <span data-icon="menu" data-icon-size="20"></span>
+          </button>
+          <h1 class="page-title-crumb">Practical Challenges</h1>
+        </div>
+        <div class="topbar-right">
+          <button class="icon-btn theme-toggle-btn" aria-label="Toggle theme"></button>
+        </div>
+      </header>
+
+      <main class="page-container">
+        <!-- Filter Bar -->
+        <div class="card" style="margin-bottom: var(--space-8); padding: var(--space-5);">
+          <div style="display: grid; grid-template-columns: 2fr 1fr 1fr auto; gap: var(--space-4); align-items: center;">
+            <div>
+              <input type="text" id="filter-search" class="form-control" placeholder="Search challenges by title or keyword...">
+            </div>
+            <div>
+              <select id="filter-skill" class="form-control">
+                <option value="">All Skills</option>
+              </select>
+            </div>
+            <div>
+              <select id="filter-difficulty" class="form-control">
+                <option value="">All Difficulties</option>
+                <option value="BEGINNER">Beginner</option>
+                <option value="INTERMEDIATE">Intermediate</option>
+                <option value="ADVANCED">Advanced</option>
+              </select>
+            </div>
+            <div>
+              <button class="btn btn-secondary" id="btn-reset-filters">Reset</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Challenges Grid -->
+        <div id="challenges-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(360px, 1fr)); gap: var(--space-6);">
+          <!-- Dynamic Cards -->
+        </div>
+
+        <div id="challenges-empty" style="display: none; margin-top: var(--space-8);">
+          <div class="empty-state">
+            <div class="empty-state-icon"><span data-icon="code-2" data-icon-size="40"></span></div>
+            <div class="empty-state-title">No matching challenges found</div>
+            <div class="empty-state-desc">Try clearing filters or selecting another skill filter.</div>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <!-- Challenge Workspace & Submission Modal -->
+  <div class="modal-backdrop" id="challenge-modal">
+    <div class="modal-content" style="max-width: 820px;">
+      <div class="modal-header">
+        <div>
+          <div style="display: flex; gap: var(--space-2); margin-bottom: 4px;">
+            <span id="modal-ch-skill" class="badge badge-primary"></span>
+            <span id="modal-ch-diff" class="badge badge-neutral"></span>
+            <span id="modal-ch-pts" class="badge badge-neutral"></span>
+          </div>
+          <h3 id="modal-ch-title" style="font-size: var(--text-xl); font-weight: 700;"></h3>
+        </div>
+        <button class="icon-btn" id="modal-close-btn" style="border: none;">
+          <span data-icon="x" data-icon-size="18"></span>
+        </button>
+      </div>
+
+      <div class="modal-body">
+        <!-- Tabs: Requirements vs Submit Evidence -->
+        <div class="tab-switch" style="margin-bottom: var(--space-6);">
+          <button type="button" class="tab-btn active" id="tab-btn-reqs">Requirements &amp; Rubric</button>
+          <button type="button" class="tab-btn" id="tab-btn-submit">Submit Evidence</button>
+        </div>
+
+        <!-- Tab 1: Requirements -->
+        <div id="tab-content-reqs">
+          <div style="margin-bottom: var(--space-5);">
+            <h4 style="font-size: var(--text-sm); font-weight: 600; color: var(--text-secondary); margin-bottom: var(--space-2); text-transform: uppercase;">Instructions</h4>
+            <div id="modal-ch-instructions" style="font-size: var(--text-sm); line-height: 1.6; white-space: pre-line; background-color: var(--bg-surface-elevated); padding: var(--space-4); border-radius: var(--radius-md);"></div>
+          </div>
+
+          <div style="margin-bottom: var(--space-5);">
+            <h4 style="font-size: var(--text-sm); font-weight: 600; color: var(--text-secondary); margin-bottom: var(--space-2); text-transform: uppercase;">Submission Requirements</h4>
+            <div id="modal-ch-reqs" style="font-size: var(--text-sm); line-height: 1.6; white-space: pre-line;"></div>
+          </div>
+
+          <!-- Evaluation Rubric -->
+          <div style="margin-bottom: var(--space-5);">
+            <h4 style="font-size: var(--text-sm); font-weight: 600; color: var(--text-secondary); margin-bottom: var(--space-2); text-transform: uppercase;">Evaluation Rubric</h4>
+            <div id="modal-ch-rubric" style="display: flex; flex-direction: column; gap: var(--space-2);"></div>
+          </div>
+
+          <div id="modal-ch-sample-box" style="margin-bottom: var(--space-5); display: none;">
+            <h4 style="font-size: var(--text-sm); font-weight: 600; color: var(--text-secondary); margin-bottom: var(--space-2); text-transform: uppercase;">Sample Verification</h4>
+            <pre id="modal-ch-sample" style="font-family: var(--font-mono); font-size: var(--text-xs); background-color: var(--bg-surface-elevated); padding: var(--space-4); border-radius: var(--radius-md); overflow-x: auto;"></pre>
+          </div>
+        </div>
+
+        <!-- Tab 2: Submit Evidence -->
+        <div id="tab-content-submit" style="display: none;">
+          <form id="form-submission" enctype="multipart/form-data">
+            <div class="form-group">
+              <label class="form-label" for="sub-repo-url">GitHub Repository URL</label>
+              <input type="url" id="sub-repo-url" class="form-control" placeholder="https://github.com/username/repository">
+              <span class="form-helper">Public GitHub repository URL containing your project files.</span>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="sub-project-url">Deployed URL / Preview (Optional)</label>
+              <input type="url" id="sub-project-url" class="form-control" placeholder="https://my-app.up.railway.app">
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="sub-explanation">Technical Explanation / Architecture Notes</label>
+              <textarea id="sub-explanation" class="form-control" rows="4" placeholder="Briefly describe your implementation choices, algorithms, and how you validated edge cases..."></textarea>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="sub-file">Supporting Archive or Evidence (Max 5MB)</label>
+              <input type="file" id="sub-file" class="form-control" accept=".zip,.pdf,.png,.jpg,.jpeg,.txt,.md">
+              <span class="form-helper">Allowed formats: .zip, .pdf, .png, .jpg, .txt, .md</span>
+            </div>
+
+            <div style="display: flex; justify-content: flex-end; gap: var(--space-3); margin-top: var(--space-6);">
+              <button type="button" class="btn btn-secondary" id="btn-save-draft">Save Draft</button>
+              <button type="submit" class="btn btn-primary" id="btn-submit-review">Submit for Review</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="/js/icons.js"></script>
+  <script src="/js/theme.js"></script>
+  <script src="/js/toast.js"></script>
+  <script src="/js/api.js"></script>
+  <script>
+    let activeChallengeId = null;
+
+    async function loadSkillsFilter() {
+      try {
+        const res = await SkillProof.apiFetch('/api/v1/skills?size=100');
+        const select = document.getElementById('filter-skill');
+        if (res.data && res.data.content) {
+          res.data.content.forEach(s => {
+            const opt = document.createElement('option');
+            opt.value = s.id;
+            opt.textContent = s.name;
+            select.appendChild(opt);
+          });
+        }
+      } catch (e) {}
+    }
+
+    async function loadChallenges() {
+      const search = document.getElementById('filter-search').value.trim();
+      const skillId = document.getElementById('filter-skill').value;
+      const difficulty = document.getElementById('filter-difficulty').value;
+
+      const params = new URLSearchParams();
+      if (search) params.set('search', search);
+      if (skillId) params.set('skillId', skillId);
+      if (difficulty) params.set('difficulty', difficulty);
+
+      try {
+        const res = await SkillProof.apiFetch(`/api/v1/challenges?${params.toString()}`);
+        const challenges = res.data.content;
+        const grid = document.getElementById('challenges-grid');
+        const empty = document.getElementById('challenges-empty');
+
+        if (challenges.length === 0) {
+          grid.innerHTML = '';
+          empty.style.display = 'block';
+          return;
+        }
+
+        empty.style.display = 'none';
+        grid.innerHTML = challenges.map(ch => {
+          let statusBadge = '';
+          if (ch.latestSubmissionStatus === 'APPROVED') {
+            statusBadge = `<span class="badge badge-success"><span data-icon="check-circle" data-icon-size="12"></span> Approved</span>`;
+          } else if (ch.latestSubmissionStatus === 'UNDER_REVIEW' || ch.latestSubmissionStatus === 'SUBMITTED') {
+            statusBadge = `<span class="badge badge-warning"><span data-icon="clock" data-icon-size="12"></span> In Review</span>`;
+          } else if (ch.latestSubmissionStatus === 'CHANGES_REQUESTED') {
+            statusBadge = `<span class="badge badge-danger">Revisions Needed</span>`;
+          } else if (!ch.eligible) {
+            statusBadge = `<span class="badge badge-neutral">Prerequisites Locked</span>`;
+          }
+
+          return `
+            <div class="card" style="display: flex; flex-direction: column; justify-content: space-between;">
+              <div>
+                <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: var(--space-3);">
+                  <span class="badge badge-neutral">${escapeHtml(ch.skillName)}</span>
+                  <div>${statusBadge}</div>
+                </div>
+
+                <h3 style="font-size: var(--text-base); font-weight: 700; color: var(--text-primary); margin-bottom: var(--space-2);">
+                  ${escapeHtml(ch.title)}
+                </h3>
+
+                <p style="font-size: var(--text-xs); color: var(--text-secondary); line-height: 1.6; margin-bottom: var(--space-4);">
+                  ${escapeHtml(ch.summary)}
+                </p>
+              </div>
+
+              <div>
+                <div style="display: flex; justify-content: space-between; align-items: center; font-size: var(--text-xs); color: var(--text-muted); border-top: 1px solid var(--border-subtle); padding-top: var(--space-3); margin-bottom: var(--space-4);">
+                  <span>${ch.difficulty}</span>
+                  <span>Est. ${ch.estimatedMinutes} mins</span>
+                  <span style="font-weight: 700; color: var(--accent-text);">${ch.points} pts</span>
+                </div>
+
+                <button class="btn btn-primary btn-sm" style="width: 100%;" onclick="openChallengeModal(${ch.id})">
+                  <span>${ch.latestSubmissionStatus ? 'View Submission / Details' : 'Open Workspace'}</span>
+                  ${getIcon('arrow-right', 14)}
+                </button>
+              </div>
+            </div>
+          `;
+        }).join('');
+
+      } catch (err) {
+        showToast('Failed to load challenges: ' + err.message, 'error');
+      }
+    }
+
+    async function openChallengeModal(challengeId) {
+      activeChallengeId = challengeId;
+      try {
+        const res = await SkillProof.apiFetch(`/api/v1/challenges/${challengeId}`);
+        const ch = res.data;
+
+        document.getElementById('modal-ch-title').textContent = ch.title;
+        document.getElementById('modal-ch-skill').textContent = ch.skillName;
+        document.getElementById('modal-ch-diff').textContent = ch.difficulty;
+        document.getElementById('modal-ch-pts').textContent = `${ch.points} Points`;
+        document.getElementById('modal-ch-instructions').textContent = ch.instructions;
+        document.getElementById('modal-ch-reqs').textContent = ch.submissionRequirements;
+
+        if (ch.sampleInputOutput) {
+          document.getElementById('modal-ch-sample').textContent = ch.sampleInputOutput;
+          document.getElementById('modal-ch-sample-box').style.display = 'block';
+        } else {
+          document.getElementById('modal-ch-sample-box').style.display = 'none';
+        }
+
+        // Render rubric
+        const rubricBox = document.getElementById('modal-ch-rubric');
+        if (ch.rubric && ch.rubric.length > 0) {
+          rubricBox.innerHTML = ch.rubric.map(r => `
+            <div style="background-color: var(--bg-surface-elevated); padding: var(--space-3); border-radius: var(--radius-sm); border-left: 3px solid var(--accent-primary);">
+              <div style="display: flex; justify-content: space-between; font-size: var(--text-xs); font-weight: 600; margin-bottom: 2px;">
+                <span>${escapeHtml(r.criterion)}</span>
+                <span style="color: var(--accent-text);">${r.maxPoints} pts</span>
+              </div>
+              <div style="font-size: 11px; color: var(--text-secondary);">${escapeHtml(r.guidance)}</div>
+            </div>
+          `).join('');
+        }
+
+        // Prepopulate existing submission draft if available
+        if (ch.latestSubmissionId) {
+          try {
+            const subRes = await SkillProof.apiFetch(`/api/v1/submissions/${ch.latestSubmissionId}`);
+            if (subRes.data) {
+              document.getElementById('sub-repo-url').value = subRes.data.repoUrl || '';
+              document.getElementById('sub-project-url').value = subRes.data.projectUrl || '';
+              document.getElementById('sub-explanation').value = subRes.data.explanation || '';
+            }
+          } catch (e) {}
+        } else {
+          document.getElementById('form-submission').reset();
+        }
+
+        // Default to Requirements tab
+        switchTab('reqs');
+        document.getElementById('challenge-modal').classList.add('open');
+      } catch (err) {
+        showToast('Failed to load challenge workspace: ' + err.message, 'error');
+      }
+    }
+
+    function switchTab(tab) {
+      const tabReqs = document.getElementById('tab-btn-reqs');
+      const tabSub = document.getElementById('tab-btn-submit');
+      const contentReqs = document.getElementById('tab-content-reqs');
+      const contentSub = document.getElementById('tab-content-submit');
+
+      if (tab === 'reqs') {
+        tabReqs.classList.add('active');
+        tabSub.classList.remove('active');
+        contentReqs.style.display = 'block';
+        contentSub.style.display = 'none';
+      } else {
+        tabSub.classList.add('active');
+        tabReqs.classList.remove('active');
+        contentSub.style.display = 'block';
+        contentReqs.style.display = 'none';
+      }
+    }
+
+    async function handleSubmission(isDraft) {
+      if (!activeChallengeId) return;
+
+      const repoUrl = document.getElementById('sub-repo-url').value.trim();
+      const projectUrl = document.getElementById('sub-project-url').value.trim();
+      const explanation = document.getElementById('sub-explanation').value.trim();
+      const fileInput = document.getElementById('sub-file');
+
+      const formData = new FormData();
+      if (repoUrl) formData.append('repoUrl', repoUrl);
+      if (projectUrl) formData.append('projectUrl', projectUrl);
+      if (explanation) formData.append('explanation', explanation);
+      formData.append('isDraft', isDraft);
+
+      if (fileInput.files.length > 0) {
+        formData.append('file', fileInput.files[0]);
+      }
+
+      try {
+        const res = await SkillProof.apiFetch(`/api/v1/submissions/challenges/${activeChallengeId}`, {
+          method: 'POST',
+          body: formData
+        });
+
+        showToast(res.message, 'success');
+        document.getElementById('challenge-modal').classList.remove('open');
+        loadChallenges();
+      } catch (err) {
+        showToast(err.message, 'error');
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      await SkillProof.fetchCurrentUser();
+      SkillProof.renderAppSidebar('challenges');
+      SkillProof.initTopbar();
+
+      await loadSkillsFilter();
+
+      // Check query param
+      const urlParams = new URLSearchParams(window.location.search);
+      const skillParam = urlParams.get('skillId');
+      if (skillParam) {
+        document.getElementById('filter-skill').value = skillParam;
+      }
+
+      await loadChallenges();
+
+      document.getElementById('filter-search').addEventListener('input', loadChallenges);
+      document.getElementById('filter-skill').addEventListener('change', loadChallenges);
+      document.getElementById('filter-difficulty').addEventListener('change', loadChallenges);
+      document.getElementById('btn-reset-filters').addEventListener('click', () => {
+        document.getElementById('filter-search').value = '';
+        document.getElementById('filter-skill').value = '';
+        document.getElementById('filter-difficulty').value = '';
+        loadChallenges();
+      });
+
+      document.getElementById('tab-btn-reqs').addEventListener('click', () => switchTab('reqs'));
+      document.getElementById('tab-btn-submit').addEventListener('click', () => switchTab('submit'));
+      document.getElementById('modal-close-btn').addEventListener('click', () => {
+        document.getElementById('challenge-modal').classList.remove('open');
+      });
+
+      document.getElementById('btn-save-draft').addEventListener('click', () => handleSubmission(true));
+      document.getElementById('form-submission').addEventListener('submit', (e) => {
+        e.preventDefault();
+        handleSubmission(false);
+      });
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SkillProof — Prove what you can build.</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%236366f1' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z'/></svg>">
+  <link rel="stylesheet" href="/css/tokens.css">
+  <link rel="stylesheet" href="/css/main.css">
+  <style>
+    /* Landing page specific layout */
+    .landing-nav {
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: var(--space-5) var(--space-6);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .landing-links {
+      display: flex;
+      align-items: center;
+      gap: var(--space-6);
+    }
+    .landing-link {
+      font-size: var(--text-sm);
+      font-weight: 500;
+      color: var(--text-secondary);
+    }
+    .landing-link:hover {
+      color: var(--text-primary);
+    }
+    .hero-section {
+      max-width: 1180px;
+      margin: var(--space-12) auto var(--space-16);
+      padding: 0 var(--space-6);
+      text-align: center;
+    }
+    .hero-tagline {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-2);
+      padding: 4px 12px;
+      border-radius: var(--radius-full);
+      background-color: var(--accent-subtle);
+      border: 1px solid var(--accent-border);
+      color: var(--accent-text);
+      font-size: var(--text-xs);
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: var(--space-5);
+    }
+    .hero-title {
+      font-size: clamp(2.5rem, 6vw, 4.25rem);
+      font-weight: 800;
+      line-height: 1.1;
+      letter-spacing: -1.5px;
+      margin-bottom: var(--space-5);
+      color: var(--text-primary);
+    }
+    .hero-desc {
+      font-size: clamp(1rem, 2vw, 1.25rem);
+      color: var(--text-secondary);
+      max-width: 720px;
+      margin: 0 auto var(--space-8);
+      line-height: 1.6;
+    }
+    .hero-actions {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: var(--space-4);
+      flex-wrap: wrap;
+    }
+    .preview-card {
+      max-width: 960px;
+      margin: var(--space-12) auto 0;
+      background-color: var(--bg-surface);
+      border: 1px solid var(--border-strong);
+      border-radius: var(--radius-xl);
+      box-shadow: var(--shadow-xl);
+      overflow: hidden;
+      text-align: left;
+    }
+    .preview-bar {
+      background-color: var(--bg-surface-elevated);
+      border-bottom: 1px solid var(--border-subtle);
+      padding: var(--space-3) var(--space-4);
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+    }
+    .dot {
+      width: 10px;
+      height: 10px;
+      border-radius: var(--radius-full);
+      background-color: var(--border-strong);
+    }
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: var(--space-6);
+      max-width: 1200px;
+      margin: 0 auto var(--space-16);
+      padding: 0 var(--space-6);
+    }
+    .section-header {
+      text-align: center;
+      max-width: 640px;
+      margin: 0 auto var(--space-10);
+      padding: 0 var(--space-6);
+    }
+    .section-title {
+      font-size: var(--text-3xl);
+      font-weight: 700;
+      letter-spacing: -0.5px;
+      margin-bottom: var(--space-3);
+    }
+    .section-subtitle {
+      font-size: var(--text-base);
+      color: var(--text-secondary);
+    }
+    .faq-grid {
+      max-width: 800px;
+      margin: 0 auto var(--space-16);
+      padding: 0 var(--space-6);
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-4);
+    }
+    .faq-item {
+      background-color: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-lg);
+      padding: var(--space-5);
+    }
+    .faq-q {
+      font-weight: 600;
+      font-size: var(--text-base);
+      margin-bottom: var(--space-2);
+      color: var(--text-primary);
+    }
+    .faq-a {
+      font-size: var(--text-sm);
+      color: var(--text-secondary);
+      line-height: 1.6;
+    }
+    .landing-footer {
+      border-top: 1px solid var(--border-subtle);
+      padding: var(--space-8) var(--space-6);
+      text-align: center;
+      color: var(--text-muted);
+      font-size: var(--text-sm);
+      margin-top: auto;
+    }
+    @media (max-width: 768px) {
+      .landing-links { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Landing Navigation -->
+  <header style="border-bottom: 1px solid var(--border-subtle); background-color: var(--bg-surface);">
+    <div class="landing-nav">
+      <a href="/index.html" class="brand-logo">
+        <div class="brand-icon">
+          <span data-icon="shield" data-icon-size="18"></span>
+        </div>
+        <span>SkillProof</span>
+      </a>
+
+      <nav class="landing-links">
+        <a href="#how-it-works" class="landing-link">How It Works</a>
+        <a href="/skills.html" class="landing-link">Explore Skills</a>
+        <a href="/challenges.html" class="landing-link">Challenges</a>
+        <a href="/leaderboard.html" class="landing-link">Leaderboard</a>
+        <a href="#faq" class="landing-link">FAQ</a>
+      </nav>
+
+      <div style="display: flex; align-items: center; gap: var(--space-3);">
+        <button class="icon-btn theme-toggle-btn" aria-label="Toggle theme"></button>
+        <a href="/auth.html?step=login" class="btn btn-outline btn-sm">Sign In</a>
+        <a href="/auth.html?step=register" class="btn btn-primary btn-sm">Get Started</a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Hero Section -->
+  <main>
+    <section class="hero-section">
+      <div class="hero-tagline">
+        <span data-icon="award" data-icon-size="14"></span>
+        <span>Verifiable Developer Competency</span>
+      </div>
+
+      <h1 class="hero-title">Skills deserve proof.</h1>
+
+      <p class="hero-desc">
+        Stop relying on self-proclaimed bullet points on resumes. SkillProof helps students and engineers prove technical proficiency through practical coding challenges, authentic code submissions, and rigorous mentor reviews.
+      </p>
+
+      <div class="hero-actions">
+        <a href="/auth.html?step=register" class="btn btn-primary btn-lg">
+          <span>Start building your profile</span>
+          <span data-icon="arrow-right" data-icon-size="18"></span>
+        </a>
+        <a href="/challenges.html" class="btn btn-secondary btn-lg">
+          <span data-icon="code" data-icon-size="18"></span>
+          <span>Explore challenges</span>
+        </a>
+      </div>
+
+      <!-- Realistic Student Profile / Submission Preview -->
+      <div class="preview-card">
+        <div class="preview-bar">
+          <div class="dot" style="background-color: #ef4444;"></div>
+          <div class="dot" style="background-color: #f59e0b;"></div>
+          <div class="dot" style="background-color: #10b981;"></div>
+          <span style="font-size: var(--text-xs); color: var(--text-muted); font-family: var(--font-mono); margin-left: var(--space-2);">skillproof.io/profile/devon_miles</span>
+        </div>
+
+        <div style="padding: var(--space-6);">
+          <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: var(--space-4); margin-bottom: var(--space-6);">
+            <div>
+              <div style="display: flex; align-items: center; gap: var(--space-3); margin-bottom: var(--space-2);">
+                <h3 style="font-size: var(--text-xl); font-weight: 700;">Devon Miles</h3>
+                <span class="badge badge-success">
+                  <span data-icon="check-circle" data-icon-size="12"></span> Verified Student
+                </span>
+              </div>
+              <p style="font-size: var(--text-sm); color: var(--text-secondary);">Computer Science Student & Systems Enthusiast &bull; 2 Verified Badges</p>
+            </div>
+            <div style="text-align: right;">
+              <div style="font-size: var(--text-2xl); font-weight: 800; color: var(--accent-text);">245 pts</div>
+              <div style="font-size: var(--text-xs); color: var(--text-muted);">Leaderboard Rank #1</div>
+            </div>
+          </div>
+
+          <!-- Credential Badges Grid -->
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: var(--space-4);">
+            <div style="background-color: var(--bg-surface-elevated); border: 1px solid var(--border-strong); border-radius: var(--radius-lg); padding: var(--space-4);">
+              <div style="display: flex; justify-content: space-between; margin-bottom: var(--space-2);">
+                <div style="font-weight: 600; font-size: var(--text-sm); display: flex; align-items: center; gap: var(--space-2);">
+                  <span data-icon="code" data-icon-size="16" style="color: var(--accent-text);"></span>
+                  Java Fundamentals
+                </div>
+                <span class="badge badge-primary">VP-JAVA-9842A1</span>
+              </div>
+              <p style="font-size: var(--text-xs); color: var(--text-secondary); margin-bottom: var(--space-3);">
+                Console Expense Tracker verified by Senior Backend Engineer Sarah Chen (Score: 48/50).
+              </p>
+              <div style="font-size: 11px; color: var(--text-muted); font-family: var(--font-mono);">
+                Evidence: github.com/devonmiles/java-expense-tracker
+              </div>
+            </div>
+
+            <div style="background-color: var(--bg-surface-elevated); border: 1px solid var(--border-strong); border-radius: var(--radius-lg); padding: var(--space-4);">
+              <div style="display: flex; justify-content: space-between; margin-bottom: var(--space-2);">
+                <div style="font-weight: 600; font-size: var(--text-sm); display: flex; align-items: center; gap: var(--space-2);">
+                  <span data-icon="git-branch" data-icon-size="16" style="color: var(--color-success-text);"></span>
+                  Git & GitHub Workflows
+                </div>
+                <span class="badge badge-primary">VP-GIT-4419B2</span>
+              </div>
+              <p style="font-size: var(--text-xs); color: var(--text-secondary); margin-bottom: var(--space-3);">
+                Branching, rebase, and conflict resolution verified by Marcus Vance (Score: 44/45).
+              </p>
+              <div style="font-size: 11px; color: var(--text-muted); font-family: var(--font-mono);">
+                Evidence: github.com/devonmiles/git-workflow-evidence
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- How It Works Section -->
+    <section id="how-it-works" style="padding: var(--space-16) 0; border-top: 1px solid var(--border-subtle); background-color: var(--bg-surface);">
+      <div class="section-header">
+        <h2 class="section-title">How SkillProof Works</h2>
+        <p class="section-subtitle">A transparent four-step workflow connecting practical effort with cryptographic proof.</p>
+      </div>
+
+      <div class="features-grid">
+        <div class="card">
+          <div class="stat-icon" style="margin-bottom: var(--space-4);">
+            <span data-icon="compass" data-icon-size="20"></span>
+          </div>
+          <h3 style="font-size: var(--text-lg); font-weight: 600; margin-bottom: var(--space-2);">1. Choose a Challenge</h3>
+          <p style="font-size: var(--text-sm); color: var(--text-secondary); line-height: 1.6;">
+            Browse challenges filtered by prerequisite readiness. Challenges range from CLI utilities to normalized database architectures and containerized deployments.
+          </p>
+        </div>
+
+        <div class="card">
+          <div class="stat-icon" style="margin-bottom: var(--space-4);">
+            <span data-icon="code" data-icon-size="20"></span>
+          </div>
+          <h3 style="font-size: var(--text-lg); font-weight: 600; margin-bottom: var(--space-2);">2. Submit Real Code</h3>
+          <p style="font-size: var(--text-sm); color: var(--text-secondary); line-height: 1.6;">
+            Submit your working GitHub repository, deployed preview URL, and technical design notes. No multiple-choice trivia — only actual software.
+          </p>
+        </div>
+
+        <div class="card">
+          <div class="stat-icon" style="margin-bottom: var(--space-4);">
+            <span data-icon="shield" data-icon-size="20"></span>
+          </div>
+          <h3 style="font-size: var(--text-lg); font-weight: 600; margin-bottom: var(--space-2);">3. Mentor Rubric Review</h3>
+          <p style="font-size: var(--text-sm); color: var(--text-secondary); line-height: 1.6;">
+            Experienced mentors grade your implementation against a clear, multi-point rubric covering architecture, testing, error safety, and code quality.
+          </p>
+        </div>
+
+        <div class="card">
+          <div class="stat-icon" style="margin-bottom: var(--space-4);">
+            <span data-icon="award" data-icon-size="20"></span>
+          </div>
+          <h3 style="font-size: var(--text-lg); font-weight: 600; margin-bottom: var(--space-2);">4. Verified Credentials</h3>
+          <p style="font-size: var(--text-sm); color: var(--text-secondary); line-height: 1.6;">
+            Approved submissions issue an indelible verification badge code. Share your public profile with prospective hiring managers and teams.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- FAQ Section -->
+    <section id="faq" style="padding: var(--space-16) 0;">
+      <div class="section-header">
+        <h2 class="section-title">Frequently Asked Questions</h2>
+        <p class="section-subtitle">Everything you need to know about verification and peer review.</p>
+      </div>
+
+      <div class="faq-grid">
+        <div class="faq-item">
+          <div class="faq-q">What makes a skill "Verified" on SkillProof?</div>
+          <div class="faq-a">
+            A skill is only marked verified after a student successfully submits authentic practical project evidence meeting all requirements, evaluated and approved by an authorized mentor with rubric scoring.
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-q">How does Email OTP authentication protect my account?</div>
+          <div class="faq-a">
+            Authentication generates cryptographically secure 6-digit codes on the backend that expire in 5 minutes. Only secure hashes are saved in the database, with rate limits, attempt thresholds, and lockout protection.
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-q">How does the prerequisite recommendation engine work?</div>
+          <div class="faq-a">
+            SkillProof models skills and challenges as a directed acyclic graph (DAG). The backend evaluates completed competencies, detects circular loops, and produces explainable suggestions for your next learning milestone.
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-q">Can I keep my profile private?</div>
+          <div class="faq-a">
+            Yes. Every user has granular privacy controls to hide public profiles, exclude their score from the leaderboard, or keep mentor reviews private.
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Landing Footer -->
+  <footer class="landing-footer">
+    <div style="max-width: 1200px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: var(--space-4);">
+      <div style="display: flex; align-items: center; gap: var(--space-2);">
+        <span data-icon="shield" data-icon-size="16"></span>
+        <span style="font-weight: 600; color: var(--text-primary);">SkillProof</span>
+        <span>&bull; Prove what you can build.</span>
+      </div>
+      <div>
+        Built with Spring Boot 3 &amp; Vanilla JavaScript &bull; Clean Architecture &bull; 2026
+      </div>
+    </div>
+  </footer>
+
+  <script src="/js/icons.js"></script>
+  <script src="/js/theme.js"></script>
+  <script src="/js/toast.js"></script>
+  <script src="/js/api.js"></script>
+</body>
+</html>

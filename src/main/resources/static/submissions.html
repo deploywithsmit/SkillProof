@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Submissions — SkillProof</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%236366f1' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z'/></svg>">
+  <link rel="stylesheet" href="/css/tokens.css">
+  <link rel="stylesheet" href="/css/main.css">
+</head>
+<body>
+
+  <div class="app-layout">
+    <aside class="sidebar" id="app-sidebar"></aside>
+
+    <div class="app-main">
+      <header class="topbar">
+        <div class="topbar-left">
+          <button class="mobile-menu-btn" id="mobile-menu-toggle" aria-label="Toggle navigation">
+            <span data-icon="menu" data-icon-size="20"></span>
+          </button>
+          <h1 class="page-title-crumb">My Submissions</h1>
+        </div>
+        <div class="topbar-right">
+          <button class="icon-btn theme-toggle-btn" aria-label="Toggle theme"></button>
+        </div>
+      </header>
+
+      <main class="page-container">
+        <div class="card" style="margin-bottom: var(--space-6);">
+          <div class="card-header">
+            <div>
+              <h2 class="card-title">Challenge Submission History</h2>
+              <p class="card-subtitle">Review statuses, mentor feedback, and revision requests</p>
+            </div>
+            <a href="/challenges.html" class="btn btn-primary btn-sm">
+              <span data-icon="plus" data-icon-size="14"></span>
+              <span>New Submission</span>
+            </a>
+          </div>
+
+          <div class="table-container">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Challenge</th>
+                  <th>Skill</th>
+                  <th>Status</th>
+                  <th>Submitted At</th>
+                  <th>Assigned Mentor</th>
+                  <th>Score</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="submissions-tbody">
+                <!-- Dynamic rows -->
+              </tbody>
+            </table>
+          </div>
+
+          <div id="submissions-empty" style="display: none; padding: var(--space-8); text-align: center;">
+            <div class="empty-state-icon"><span data-icon="file-code" data-icon-size="36"></span></div>
+            <p style="font-size: var(--text-sm); color: var(--text-secondary); margin-bottom: var(--space-4);">
+              You haven't submitted any practical challenges yet.
+            </p>
+            <a href="/challenges.html" class="btn btn-primary btn-sm">Browse Challenges</a>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <!-- Submission Detail & Feedback Modal -->
+  <div class="modal-backdrop" id="sub-modal">
+    <div class="modal-content" style="max-width: 720px;">
+      <div class="modal-header">
+        <div>
+          <h3 id="modal-sub-title" style="font-size: var(--text-lg); font-weight: 700;"></h3>
+          <span id="modal-sub-badge" class="badge" style="margin-top: 4px;"></span>
+        </div>
+        <button class="icon-btn" id="modal-sub-close" style="border: none;">
+          <span data-icon="x" data-icon-size="18"></span>
+        </button>
+      </div>
+
+      <div class="modal-body">
+        <!-- Evidence Links -->
+        <div style="background-color: var(--bg-surface-elevated); padding: var(--space-4); border-radius: var(--radius-md); margin-bottom: var(--space-5);">
+          <h4 style="font-size: var(--text-xs); text-transform: uppercase; color: var(--text-muted); font-weight: 600; margin-bottom: var(--space-2);">Submitted Evidence</h4>
+          <div id="modal-evidence-links" style="display: flex; flex-direction: column; gap: var(--space-2); font-size: var(--text-sm);"></div>
+        </div>
+
+        <!-- Explanation -->
+        <div id="modal-explanation-box" style="margin-bottom: var(--space-5); display: none;">
+          <h4 style="font-size: var(--text-xs); text-transform: uppercase; color: var(--text-muted); font-weight: 600; margin-bottom: var(--space-2);">Technical Notes</h4>
+          <p id="modal-sub-explanation" style="font-size: var(--text-sm); line-height: 1.6; white-space: pre-line; background-color: var(--bg-surface-elevated); padding: var(--space-4); border-radius: var(--radius-md);"></p>
+        </div>
+
+        <!-- Review Feedback Section -->
+        <div id="modal-review-section" style="display: none;">
+          <h4 style="font-size: var(--text-sm); font-weight: 700; color: var(--text-primary); margin-bottom: var(--space-3); border-top: 1px solid var(--border-subtle); padding-top: var(--space-4);">
+            Mentor Evaluation
+          </h4>
+
+          <div style="background-color: var(--bg-surface-elevated); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: var(--space-4); margin-bottom: var(--space-4);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-2);">
+              <span id="modal-reviewer-name" style="font-weight: 600; font-size: var(--text-sm);"></span>
+              <span id="modal-review-score" class="badge badge-primary"></span>
+            </div>
+            <p id="modal-review-feedback" style="font-size: var(--text-sm); line-height: 1.6; color: var(--text-secondary); margin-bottom: var(--space-3);"></p>
+            <div id="modal-review-suggestions" style="font-size: var(--text-xs); color: var(--text-muted); border-top: 1px dashed var(--border-subtle); padding-top: var(--space-2);"></div>
+          </div>
+
+          <!-- Rubric Breakdown -->
+          <h5 style="font-size: var(--text-xs); text-transform: uppercase; color: var(--text-muted); margin-bottom: var(--space-2);">Rubric Scores</h5>
+          <div id="modal-rubric-scores" style="display: flex; flex-direction: column; gap: var(--space-2);"></div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn btn-outline" id="modal-sub-dismiss">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="/js/icons.js"></script>
+  <script src="/js/theme.js"></script>
+  <script src="/js/toast.js"></script>
+  <script src="/js/api.js"></script>
+  <script>
+    async function loadSubmissions() {
+      try {
+        const res = await SkillProof.apiFetch('/api/v1/submissions/mine?size=50');
+        const subs = res.data.content;
+        const tbody = document.getElementById('submissions-tbody');
+        const empty = document.getElementById('submissions-empty');
+
+        if (subs.length === 0) {
+          tbody.innerHTML = '';
+          empty.style.display = 'block';
+          return;
+        }
+
+        empty.style.display = 'none';
+        tbody.innerHTML = subs.map(s => {
+          let badgeClass = 'badge-neutral';
+          if (s.status === 'APPROVED') badgeClass = 'badge-success';
+          if (s.status === 'UNDER_REVIEW' || s.status === 'SUBMITTED') badgeClass = 'badge-warning';
+          if (s.status === 'CHANGES_REQUESTED') badgeClass = 'badge-danger';
+
+          return `
+            <tr>
+              <td><strong style="color: var(--text-primary);">${escapeHtml(s.challengeTitle)}</strong></td>
+              <td>${escapeHtml(s.skillName)}</td>
+              <td><span class="badge ${badgeClass}">${s.status}</span></td>
+              <td style="color: var(--text-muted); font-size: var(--text-xs);">
+                ${s.submittedAt ? new Date(s.submittedAt).toLocaleDateString() : 'Draft'}
+              </td>
+              <td>${escapeHtml(s.assignedMentorName || 'Pending Assignment')}</td>
+              <td><strong>${s.totalScore !== null ? s.totalScore : '—'}</strong></td>
+              <td>
+                <button class="btn btn-secondary btn-sm" onclick="openSubModal(${s.id})">
+                  Details
+                </button>
+              </td>
+            </tr>
+          `;
+        }).join('');
+
+      } catch (err) {
+        showToast('Failed to load submissions: ' + err.message, 'error');
+      }
+    }
+
+    async function openSubModal(subId) {
+      try {
+        const res = await SkillProof.apiFetch(`/api/v1/submissions/${subId}`);
+        const s = res.data;
+
+        document.getElementById('modal-sub-title').textContent = s.challengeTitle;
+        const badge = document.getElementById('modal-sub-badge');
+        badge.textContent = s.status;
+        badge.className = `badge ${s.status === 'APPROVED' ? 'badge-success' : s.status === 'CHANGES_REQUESTED' ? 'badge-danger' : 'badge-warning'}`;
+
+        // Evidence links
+        const linksBox = document.getElementById('modal-evidence-links');
+        linksBox.innerHTML = '';
+        if (s.repoUrl) {
+          linksBox.innerHTML += `<div><strong>Repository:</strong> <a href="${escapeHtml(s.repoUrl)}" target="_blank" style="color: var(--accent-text);">${escapeHtml(s.repoUrl)}</a></div>`;
+        }
+        if (s.projectUrl) {
+          linksBox.innerHTML += `<div><strong>Live Preview:</strong> <a href="${escapeHtml(s.projectUrl)}" target="_blank" style="color: var(--accent-text);">${escapeHtml(s.projectUrl)}</a></div>`;
+        }
+        if (s.attachmentFilename) {
+          linksBox.innerHTML += `<div><strong>Attachment:</strong> <a href="/api/v1/submissions/${s.id}/attachment" target="_blank" style="color: var(--accent-text);">${escapeHtml(s.attachmentFilename)}</a> (${Math.round((s.attachmentSizeBytes || 0) / 1024)} KB)</div>`;
+        }
+
+        if (s.explanation) {
+          document.getElementById('modal-sub-explanation').textContent = s.explanation;
+          document.getElementById('modal-explanation-box').style.display = 'block';
+        } else {
+          document.getElementById('modal-explanation-box').style.display = 'none';
+        }
+
+        // Review Details
+        const reviewSection = document.getElementById('modal-review-section');
+        if (s.reviewId) {
+          reviewSection.style.display = 'block';
+          document.getElementById('modal-reviewer-name').textContent = `Reviewed by ${s.reviewerName}`;
+          document.getElementById('modal-review-score').textContent = `Score: ${s.totalScore}`;
+          document.getElementById('modal-review-feedback').textContent = s.generalFeedback;
+          document.getElementById('modal-review-suggestions').textContent = s.improvementSuggestions ? `Suggestions for improvement: ${s.improvementSuggestions}` : '';
+
+          const rubricScoresBox = document.getElementById('modal-rubric-scores');
+          if (s.rubricScores && s.rubricScores.length > 0) {
+            rubricScoresBox.innerHTML = s.rubricScores.map(score => `
+              <div style="background-color: var(--bg-surface); padding: var(--space-2) var(--space-3); border-radius: var(--radius-sm); border: 1px solid var(--border-subtle); display: flex; justify-content: space-between; align-items: center; font-size: var(--text-xs);">
+                <div>
+                  <div style="font-weight: 600;">${escapeHtml(score.criterionName)}</div>
+                  ${score.comments ? `<div style="color: var(--text-muted); font-size: 11px;">${escapeHtml(score.comments)}</div>` : ''}
+                </div>
+                <div style="font-family: var(--font-mono); font-weight: 700; color: var(--accent-text);">${score.score} / ${score.maxScore}</div>
+              </div>
+            `).join('');
+          } else {
+            rubricScoresBox.innerHTML = '';
+          }
+        } else {
+          reviewSection.style.display = 'none';
+        }
+
+        document.getElementById('sub-modal').classList.add('open');
+      } catch (err) {
+        showToast('Failed to load submission details: ' + err.message, 'error');
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      const user = await SkillProof.fetchCurrentUser();
+      if (!user) {
+        window.location.href = '/auth.html?step=login';
+        return;
+      }
+      SkillProof.renderAppSidebar('submissions');
+      SkillProof.initTopbar();
+
+      await loadSubmissions();
+
+      document.getElementById('modal-sub-close').addEventListener('click', () => {
+        document.getElementById('sub-modal').classList.remove('open');
+      });
+      document.getElementById('modal-sub-dismiss').addEventListener('click', () => {
+        document.getElementById('sub-modal').classList.remove('open');
+      });
+    });
+  </script>
+</body>
+</html>

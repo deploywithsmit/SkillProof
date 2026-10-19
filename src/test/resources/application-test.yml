@@ -1,0 +1,38 @@
+spring:
+  datasource:
+    url: jdbc:h2:mem:skillproof_test;MODE=MySQL;DATABASE_TO_LOWER=TRUE;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+    driver-class-name: org.h2.Driver
+    username: sa
+    password: ""
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.H2Dialect
+  flyway:
+    enabled: false
+  mail:
+    host: localhost
+    port: 2525
+
+app:
+  mail:
+    from: test@skillproof.io
+    dev-mode: true
+  auth:
+    otp-expiry-minutes: 5
+    otp-cooldown-seconds: 60
+    max-otp-attempts: 5
+    lockout-minutes: 15
+  upload:
+    dir: target/test-uploads
+    allowed-extensions:
+      - zip
+      - pdf
+      - png
+      - jpg
+      - jpeg
+      - txt
+      - md

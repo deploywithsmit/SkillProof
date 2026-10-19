@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Authentication — SkillProof</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%236366f1' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z'/></svg>">
+  <link rel="stylesheet" href="/css/tokens.css">
+  <link rel="stylesheet" href="/css/main.css">
+  <style>
+    .auth-page {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: var(--space-6);
+      background-color: var(--bg-app);
+    }
+    .auth-container {
+      max-width: 440px;
+      width: 100%;
+    }
+    .auth-card {
+      background-color: var(--bg-surface);
+      border: 1px solid var(--border-strong);
+      border-radius: var(--radius-xl);
+      padding: var(--space-8);
+      box-shadow: var(--shadow-xl);
+    }
+    .auth-header {
+      text-align: center;
+      margin-bottom: var(--space-6);
+    }
+    .auth-step {
+      display: none;
+    }
+    .auth-step.active {
+      display: block;
+    }
+    .tab-switch {
+      display: flex;
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 3px;
+      background-color: var(--bg-surface-elevated);
+      margin-bottom: var(--space-6);
+    }
+    .tab-btn {
+      flex: 1;
+      padding: var(--space-2);
+      border: none;
+      background: transparent;
+      color: var(--text-secondary);
+      font-size: var(--text-sm);
+      font-weight: 500;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      transition: all var(--transition-fast);
+    }
+    .tab-btn.active {
+      background-color: var(--bg-surface);
+      color: var(--text-primary);
+      font-weight: 600;
+      box-shadow: var(--shadow-sm);
+    }
+  </style>
+</head>
+<body>
+
+  <div class="auth-page">
+    <div style="margin-bottom: var(--space-6); text-align: center;">
+      <a href="/index.html" class="brand-logo" style="justify-content: center;">
+        <div class="brand-icon">
+          <span data-icon="shield" data-icon-size="18"></span>
+        </div>
+        <span>SkillProof</span>
+      </a>
+      <p style="font-size: var(--text-xs); color: var(--text-muted); margin-top: 4px;">Prove what you can build.</p>
+    </div>
+
+    <div class="auth-container">
+      <div class="auth-card">
+
+        <!-- ================= STEP 1: LOGIN ================= -->
+        <div id="step-login" class="auth-step active">
+          <div class="auth-header">
+            <h2 style="font-size: var(--text-xl); font-weight: 700; margin-bottom: 4px;">Welcome back</h2>
+            <p style="font-size: var(--text-sm); color: var(--text-secondary);">Choose your preferred sign-in method</p>
+          </div>
+
+          <div class="tab-switch">
+            <button type="button" class="tab-btn active" id="tab-login-otp">Email OTP</button>
+            <button type="button" class="tab-btn" id="tab-login-password">Password</button>
+          </div>
+
+          <!-- Login via OTP Form -->
+          <form id="form-login-otp">
+            <div class="form-group">
+              <label class="form-label" for="login-otp-email">Email Address</label>
+              <input type="email" id="login-otp-email" class="form-control" placeholder="developer@domain.com" required autocomplete="email">
+              <span class="form-helper">We will send a cryptographically secure 6-digit code.</span>
+            </div>
+            <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: var(--space-2);" id="btn-send-login-otp">
+              <span>Send Login Code</span>
+              <span data-icon="arrow-right" data-icon-size="16"></span>
+            </button>
+          </form>
+
+          <!-- Login via Password Form -->
+          <form id="form-login-password" style="display: none;">
+            <div class="form-group">
+              <label class="form-label" for="login-pw-email">Email Address</label>
+              <input type="email" id="login-pw-email" class="form-control" placeholder="developer@domain.com" required autocomplete="email">
+            </div>
+            <div class="form-group">
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <label class="form-label" for="login-pw-password">Password</label>
+                <a href="#forgot" id="link-forgot-pw" style="font-size: var(--text-xs); color: var(--accent-text);">Forgot password?</a>
+              </div>
+              <input type="password" id="login-pw-password" class="form-control" placeholder="••••••••" required autocomplete="current-password">
+            </div>
+            <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: var(--space-2);" id="btn-password-login">
+              <span>Sign In</span>
+            </button>
+          </form>
+
+          <div style="text-align: center; margin-top: var(--space-6); font-size: var(--text-sm); color: var(--text-secondary);">
+            Don't have an account? <a href="#register" id="link-go-register" style="color: var(--accent-text); font-weight: 600;">Register here</a>
+          </div>
+        </div>
+
+        <!-- ================= STEP 2: REGISTER ================= -->
+        <div id="step-register" class="auth-step">
+          <div class="auth-header">
+            <h2 style="font-size: var(--text-xl); font-weight: 700; margin-bottom: 4px;">Create your profile</h2>
+            <p style="font-size: var(--text-sm); color: var(--text-secondary);">Start your practical verification portfolio</p>
+          </div>
+
+          <form id="form-register">
+            <div class="form-group">
+              <label class="form-label" for="reg-fullname">Full Name</label>
+              <input type="text" id="reg-fullname" class="form-control" placeholder="Alex Mercer" required minlength="2">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="reg-username">Username</label>
+              <input type="text" id="reg-username" class="form-control" placeholder="alex_dev" required pattern="^[a-zA-Z0-9_.-]+$">
+              <span class="form-helper">Alphanumeric, underscores, hyphens, and dots.</span>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="reg-email">Email Address</label>
+              <input type="email" id="reg-email" class="form-control" placeholder="alex@domain.com" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="reg-password">Password</label>
+              <input type="password" id="reg-password" class="form-control" placeholder="At least 8 characters" required minlength="8">
+            </div>
+
+            <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: var(--space-2);" id="btn-register">
+              <span>Create Account</span>
+              <span data-icon="arrow-right" data-icon-size="16"></span>
+            </button>
+          </form>
+
+          <div style="text-align: center; margin-top: var(--space-6); font-size: var(--text-sm); color: var(--text-secondary);">
+            Already have an account? <a href="#login" id="link-go-login" style="color: var(--accent-text); font-weight: 600;">Sign in</a>
+          </div>
+        </div>
+
+        <!-- ================= STEP 3: OTP VERIFICATION ================= -->
+        <div id="step-verify-otp" class="auth-step">
+          <div class="auth-header">
+            <div class="stat-icon" style="margin: 0 auto var(--space-3); width: 44px; height: 44px;">
+              <span data-icon="shield" data-icon-size="22"></span>
+            </div>
+            <h2 style="font-size: var(--text-xl); font-weight: 700; margin-bottom: 4px;" id="otp-title">Enter Verification Code</h2>
+            <p style="font-size: var(--text-sm); color: var(--text-secondary);">
+              We dispatched a 6-digit code to <strong id="otp-display-email" style="color: var(--text-primary);">...</strong>
+            </p>
+          </div>
+
+          <form id="form-verify-otp">
+            <div class="otp-container">
+              <input type="text" maxlength="1" class="otp-digit" data-idx="0" inputmode="numeric" autocomplete="one-time-code" autofocus>
+              <input type="text" maxlength="1" class="otp-digit" data-idx="1" inputmode="numeric">
+              <input type="text" maxlength="1" class="otp-digit" data-idx="2" inputmode="numeric">
+              <input type="text" maxlength="1" class="otp-digit" data-idx="3" inputmode="numeric">
+              <input type="text" maxlength="1" class="otp-digit" data-idx="4" inputmode="numeric">
+              <input type="text" maxlength="1" class="otp-digit" data-idx="5" inputmode="numeric">
+            </div>
+
+            <button type="submit" class="btn btn-primary" style="width: 100%;" id="btn-verify-otp">
+              <span>Verify &amp; Continue</span>
+            </button>
+          </form>
+
+          <div style="text-align: center; margin-top: var(--space-6); font-size: var(--text-sm); color: var(--text-secondary);">
+            Didn't receive the code?
+            <div style="margin-top: 6px;">
+              <button type="button" class="btn btn-outline btn-sm" id="btn-resend-otp" disabled>
+                <span>Resend Code</span>
+                <span id="resend-timer">(60s)</span>
+              </button>
+            </div>
+            <div style="margin-top: var(--space-3);">
+              <a href="#login" id="link-otp-back" style="font-size: var(--text-xs); color: var(--text-muted);">Use a different email</a>
+            </div>
+          </div>
+        </div>
+
+        <!-- ================= STEP 4: FORGOT PASSWORD ================= -->
+        <div id="step-forgot" class="auth-step">
+          <div class="auth-header">
+            <h2 style="font-size: var(--text-xl); font-weight: 700; margin-bottom: 4px;">Reset your password</h2>
+            <p style="font-size: var(--text-sm); color: var(--text-secondary);">Enter your email to receive a password reset code</p>
+          </div>
+
+          <form id="form-forgot">
+            <div class="form-group">
+              <label class="form-label" for="forgot-email">Account Email</label>
+              <input type="email" id="forgot-email" class="form-control" placeholder="developer@domain.com" required>
+            </div>
+            <button type="submit" class="btn btn-primary" style="width: 100%;" id="btn-forgot-send">
+              <span>Send Reset Code</span>
+            </button>
+          </form>
+
+          <div style="text-align: center; margin-top: var(--space-6); font-size: var(--text-sm);">
+            <a href="#login" id="link-forgot-back" style="color: var(--accent-text);">Back to login</a>
+          </div>
+        </div>
+
+        <!-- ================= STEP 5: RESET PASSWORD ================= -->
+        <div id="step-reset" class="auth-step">
+          <div class="auth-header">
+            <h2 style="font-size: var(--text-xl); font-weight: 700; margin-bottom: 4px;">Set new password</h2>
+            <p style="font-size: var(--text-sm); color: var(--text-secondary);">Enter the OTP and choose a new password</p>
+          </div>
+
+          <form id="form-reset">
+            <div class="form-group">
+              <label class="form-label" for="reset-otp-code">6-Digit OTP</label>
+              <input type="text" id="reset-otp-code" class="form-control" placeholder="123456" maxlength="6" pattern="^\d{6}$" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="reset-new-password">New Password</label>
+              <input type="password" id="reset-new-password" class="form-control" placeholder="At least 8 characters" minlength="8" required>
+            </div>
+            <button type="submit" class="btn btn-primary" style="width: 100%;" id="btn-reset-submit">
+              <span>Update Password</span>
+            </button>
+          </form>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <script src="/js/icons.js"></script>
+  <script src="/js/theme.js"></script>
+  <script src="/js/toast.js"></script>
+  <script src="/js/api.js"></script>
+  <script>
+    // State machine for Auth UI
+    let activePurpose = 'EMAIL_VERIFICATION';
+    let targetEmail = '';
+    let resendCountdown = 60;
+    let timerInterval = null;
+
+    function showStep(stepId) {
+      document.querySelectorAll('.auth-step').forEach(s => s.classList.remove('active'));
+      const target = document.getElementById(stepId);
+      if (target) target.classList.add('active');
+    }
+
+    function startResendTimer() {
+      const btn = document.getElementById('btn-resend-otp');
+      const timerSpan = document.getElementById('resend-timer');
+      btn.disabled = true;
+      resendCountdown = 60;
+      timerSpan.textContent = `(${resendCountdown}s)`;
+
+      if (timerInterval) clearInterval(timerInterval);
+      timerInterval = setInterval(() => {
+        resendCountdown--;
+        if (resendCountdown <= 0) {
+          clearInterval(timerInterval);
+          btn.disabled = false;
+          timerSpan.textContent = '';
+        } else {
+          timerSpan.textContent = `(${resendCountdown}s)`;
+        }
+      }, 1000);
+    }
+
+    function setupOtpInputs() {
+      const inputs = Array.from(document.querySelectorAll('.otp-digit'));
+
+      inputs.forEach((input, index) => {
+        input.addEventListener('input', (e) => {
+          const val = e.target.value.replace(/[^0-9]/g, '');
+          e.target.value = val ? val[0] : '';
+          if (val && index < inputs.length - 1) {
+            inputs[index + 1].focus();
+          }
+        });
+
+        input.addEventListener('keydown', (e) => {
+          if (e.key === 'Backspace' && !input.value && index > 0) {
+            inputs[index - 1].focus();
+          }
+        });
+
+        input.addEventListener('paste', (e) => {
+          e.preventDefault();
+          const pasteData = (e.clipboardData || window.clipboardData).getData('text').trim().replace(/[^0-9]/g, '');
+          if (pasteData.length === 6) {
+            pasteData.split('').forEach((char, i) => {
+              if (inputs[i]) inputs[i].value = char;
+            });
+            inputs[5].focus();
+          }
+        });
+      });
+    }
+
+    function getEnteredOtp() {
+      return Array.from(document.querySelectorAll('.otp-digit')).map(i => i.value).join('');
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      setupOtpInputs();
+
+      // Tab switcher for Login methods
+      const tabOtp = document.getElementById('tab-login-otp');
+      const tabPw = document.getElementById('tab-login-password');
+      const formOtp = document.getElementById('form-login-otp');
+      const formPw = document.getElementById('form-login-password');
+
+      tabOtp.addEventListener('click', () => {
+        tabOtp.classList.add('active');
+        tabPw.classList.remove('active');
+        formOtp.style.display = 'block';
+        formPw.style.display = 'none';
+      });
+
+      tabPw.addEventListener('click', () => {
+        tabPw.classList.add('active');
+        tabOtp.classList.remove('active');
+        formPw.style.display = 'block';
+        formOtp.style.display = 'none';
+      });
+
+      // Navigation links
+      document.getElementById('link-go-register').addEventListener('click', (e) => { e.preventDefault(); showStep('step-register'); });
+      document.getElementById('link-go-login').addEventListener('click', (e) => { e.preventDefault(); showStep('step-login'); });
+      document.getElementById('link-forgot-pw').addEventListener('click', (e) => { e.preventDefault(); showStep('step-forgot'); });
+      document.getElementById('link-forgot-back').addEventListener('click', (e) => { e.preventDefault(); showStep('step-login'); });
+      document.getElementById('link-otp-back').addEventListener('click', (e) => { e.preventDefault(); showStep('step-login'); });
+
+      // Registration Form Submission
+      document.getElementById('form-register').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const btn = document.getElementById('btn-register');
+        btn.disabled = true;
+
+        const payload = {
+          fullName: document.getElementById('reg-fullname').value.trim(),
+          username: document.getElementById('reg-username').value.trim(),
+          email: document.getElementById('reg-email').value.trim(),
+          password: document.getElementById('reg-password').value
+        };
+
+        try {
+          const res = await SkillProof.apiFetch('/api/v1/auth/register', {
+            method: 'POST',
+            body: payload
+          });
+
+          targetEmail = payload.email;
+          activePurpose = 'EMAIL_VERIFICATION';
+          document.getElementById('otp-display-email').textContent = targetEmail;
+          document.getElementById('otp-title').textContent = 'Verify Your Email';
+          showToast(res.message || 'Verification code sent to your email', 'success');
+          showStep('step-verify-otp');
+          startResendTimer();
+        } catch (err) {
+          showToast(err.message, 'error');
+        } finally {
+          btn.disabled = false;
+        }
+      });
+
+      // Request Login OTP Submission
+      document.getElementById('form-login-otp').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const btn = document.getElementById('btn-send-login-otp');
+        btn.disabled = true;
+
+        targetEmail = document.getElementById('login-otp-email').value.trim();
+
+        try {
+          const res = await SkillProof.apiFetch('/api/v1/auth/request-login-otp', {
+            method: 'POST',
+            body: { email: targetEmail }
+          });
+
+          activePurpose = 'LOGIN';
+          document.getElementById('otp-display-email').textContent = targetEmail;
+          document.getElementById('otp-title').textContent = 'Enter Login Code';
+          showToast(res.message || 'Login code dispatched', 'success');
+          showStep('step-verify-otp');
+          startResendTimer();
+        } catch (err) {
+          showToast(err.message, 'error');
+        } finally {
+          btn.disabled = false;
+        }
+      });
+
+      // Password Login Submission
+      document.getElementById('form-login-password').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const btn = document.getElementById('btn-password-login');
+        btn.disabled = true;
+
+        const payload = {
+          email: document.getElementById('login-pw-email').value.trim(),
+          password: document.getElementById('login-pw-password').value
+        };
+
+        try {
+          const res = await SkillProof.apiFetch('/api/v1/auth/password-login', {
+            method: 'POST',
+            body: payload
+          });
+
+          showToast('Welcome back to SkillProof!', 'success');
+          const redirect = sessionStorage.getItem('skillproof_redirect') || res.data.redirectUrl || '/dashboard.html';
+          sessionStorage.removeItem('skillproof_redirect');
+          setTimeout(() => { window.location.href = redirect; }, 400);
+        } catch (err) {
+          showToast(err.message, 'error');
+        } finally {
+          btn.disabled = false;
+        }
+      });
+
+      // Verify OTP Submission
+      document.getElementById('form-verify-otp').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const otp = getEnteredOtp();
+        if (otp.length !== 6) {
+          showToast('Please enter all 6 digits of the verification code.', 'error');
+          return;
+        }
+
+        const btn = document.getElementById('btn-verify-otp');
+        btn.disabled = true;
+
+        const endpoint = activePurpose === 'EMAIL_VERIFICATION' ? 
+          '/api/v1/auth/verify-email' : '/api/v1/auth/verify-login-otp';
+
+        try {
+          const res = await SkillProof.apiFetch(endpoint, {
+            method: 'POST',
+            body: {
+              email: targetEmail,
+              otp: otp,
+              purpose: activePurpose
+            }
+          });
+
+          showToast(res.message || 'Verified successfully!', 'success');
+          const redirect = sessionStorage.getItem('skillproof_redirect') || (res.data && res.data.redirectUrl) || '/dashboard.html';
+          sessionStorage.removeItem('skillproof_redirect');
+          setTimeout(() => { window.location.href = redirect; }, 400);
+        } catch (err) {
+          showToast(err.message, 'error');
+        } finally {
+          btn.disabled = false;
+        }
+      });
+
+      // Resend OTP Button
+      document.getElementById('btn-resend-otp').addEventListener('click', async () => {
+        try {
+          const res = await SkillProof.apiFetch('/api/v1/auth/resend-otp', {
+            method: 'POST',
+            body: {
+              email: targetEmail,
+              purpose: activePurpose
+            }
+          });
+          showToast(res.message || 'A fresh verification code has been dispatched.', 'success');
+          startResendTimer();
+        } catch (err) {
+          showToast(err.message, 'error');
+        }
+      });
+
+      // Forgot Password Form
+      document.getElementById('form-forgot').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const email = document.getElementById('forgot-email').value.trim();
+        targetEmail = email;
+
+        try {
+          const res = await SkillProof.apiFetch('/api/v1/auth/forgot-password', {
+            method: 'POST',
+            body: { email }
+          });
+          showToast(res.message, 'info');
+          showStep('step-reset');
+        } catch (err) {
+          showToast(err.message, 'error');
+        }
+      });
+
+      // Reset Password Form
+      document.getElementById('form-reset').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const otp = document.getElementById('reset-otp-code').value.trim();
+        const newPassword = document.getElementById('reset-new-password').value;
+
+        try {
+          const res = await SkillProof.apiFetch('/api/v1/auth/reset-password', {
+            method: 'POST',
+            body: {
+              email: targetEmail,
+              otp,
+              newPassword
+            }
+          });
+          showToast(res.message, 'success');
+          showStep('step-login');
+        } catch (err) {
+          showToast(err.message, 'error');
+        }
+      });
+
+      // Parse query params to handle deep links like ?step=verify-login&email=...
+      const urlParams = new URLSearchParams(window.location.search);
+      const stepParam = urlParams.get('step');
+      const emailParam = urlParams.get('email');
+
+      if (emailParam) {
+        targetEmail = emailParam;
+        document.getElementById('login-otp-email').value = emailParam;
+        document.getElementById('login-pw-email').value = emailParam;
+      }
+
+      if (stepParam === 'register') {
+        showStep('step-register');
+      } else if (stepParam === 'verify-email') {
+        activePurpose = 'EMAIL_VERIFICATION';
+        document.getElementById('otp-display-email').textContent = targetEmail;
+        document.getElementById('otp-title').textContent = 'Verify Your Email';
+        showStep('step-verify-otp');
+        startResendTimer();
+      } else if (stepParam === 'verify-login') {
+        activePurpose = 'LOGIN';
+        document.getElementById('otp-display-email').textContent = targetEmail;
+        document.getElementById('otp-title').textContent = 'Enter Login Code';
+        showStep('step-verify-otp');
+        startResendTimer();
+      }
+    });
+  </script>
+</body>
+</html>

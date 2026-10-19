@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mentor Review Workspace — SkillProof</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%236366f1' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z'/></svg>">
+  <link rel="stylesheet" href="/css/tokens.css">
+  <link rel="stylesheet" href="/css/main.css">
+</head>
+<body>
+
+  <div class="app-layout">
+    <aside class="sidebar" id="app-sidebar"></aside>
+
+    <div class="app-main">
+      <header class="topbar">
+        <div class="topbar-left">
+          <button class="mobile-menu-btn" id="mobile-menu-toggle" aria-label="Toggle navigation">
+            <span data-icon="menu" data-icon-size="20"></span>
+          </button>
+          <h1 class="page-title-crumb">Mentor Review Workspace</h1>
+        </div>
+        <div class="topbar-right">
+          <button class="icon-btn theme-toggle-btn" aria-label="Toggle theme"></button>
+        </div>
+      </header>
+
+      <main class="page-container">
+        <!-- Unauthorized Banner (hidden by default) -->
+        <div id="unauthorized-banner" class="alert alert-warning" style="display: none; margin-bottom: var(--space-6);">
+          <span data-icon="shield-alert" data-icon-size="20"></span>
+          <div>
+            <strong>Mentor Access Required:</strong> Your account does not have mentor or administrator permissions. 
+            Only verified industry mentors can evaluate practical student submissions.
+          </div>
+        </div>
+
+        <div id="mentor-content">
+          <div class="card" style="margin-bottom: var(--space-6);">
+            <div class="card-header" style="flex-wrap: wrap; gap: var(--space-4);">
+              <div>
+                <h2 class="card-title">Pending Submissions Queue</h2>
+                <p class="card-subtitle">Evaluate practical code artifacts against objective scoring rubrics</p>
+              </div>
+              <div style="display: flex; gap: var(--space-2); align-items: center;">
+                <label for="status-filter" style="font-size: var(--text-xs); color: var(--text-secondary); font-weight: 500;">Filter:</label>
+                <select id="status-filter" class="form-input" style="padding: var(--space-1) var(--space-3); font-size: var(--text-xs); width: auto;">
+                  <option value="">All Statuses</option>
+                  <option value="SUBMITTED" selected>Pending Review (SUBMITTED)</option>
+                  <option value="UNDER_REVIEW">Under Review</option>
+                  <option value="CHANGES_REQUESTED">Changes Requested</option>
+                  <option value="APPROVED">Approved</option>
+                  <option value="REJECTED">Rejected</option>
+                </select>
+                <button id="refresh-queue-btn" class="btn btn-secondary btn-sm" title="Refresh queue">
+                  <span data-icon="rotate-cw" data-icon-size="14"></span>
+                </button>
+              </div>
+            </div>
+
+            <div class="table-container">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Student</th>
+                    <th>Challenge</th>
+                    <th>Skill</th>
+                    <th>Status</th>
+                    <th>Submitted At</th>
+                    <th>Score</th>
+                    <th style="text-align: right;">Action</th>
+                  </tr>
+                </thead>
+                <tbody id="queue-tbody">
+                  <!-- Rendered dynamically -->
+                </tbody>
+              </table>
+            </div>
+
+            <div id="queue-empty" style="display: none; padding: var(--space-8); text-align: center;">
+              <div class="empty-state-icon"><span data-icon="check-circle-2" data-icon-size="36"></span></div>
+              <p style="font-size: var(--text-sm); color: var(--text-secondary); margin-bottom: var(--space-2);">
+                No submissions matching this filter in the review queue.
+              </p>
+              <span style="font-size: var(--text-xs); color: var(--text-muted);">
+                Great job! All pending practical challenges are currently up to date.
+              </span>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <!-- Review & Evaluation Modal -->
+  <div class="modal-backdrop" id="review-modal">
+    <div class="modal-content" style="max-width: 800px;">
+      <div class="modal-header">
+        <div>
+          <h3 id="rev-modal-challenge-title" style="font-size: var(--text-lg); font-weight: 700;"></h3>
+          <p id="rev-modal-student-name" style="font-size: var(--text-xs); color: var(--text-secondary); margin-top: 2px;"></p>
+        </div>
+        <button class="icon-btn" id="rev-modal-close" style="border: none;">
+          <span data-icon="x" data-icon-size="18"></span>
+        </button>
+      </div>
+
+      <div class="modal-body">
+        <!-- Evidence Section -->
+        <div style="background-color: var(--bg-surface-elevated); padding: var(--space-4); border-radius: var(--radius-md); margin-bottom: var(--space-5);">
+          <h4 style="font-size: var(--text-xs); text-transform: uppercase; color: var(--text-muted); font-weight: 600; margin-bottom: var(--space-2);">Submitted Evidence</h4>
+          <div id="rev-modal-evidence" style="display: flex; flex-direction: column; gap: var(--space-2); font-size: var(--text-sm);"></div>
+          
+          <div id="rev-modal-explanation-box" style="margin-top: var(--space-3); padding-top: var(--space-3); border-top: 1px solid var(--border-subtle); display: none;">
+            <div style="font-size: var(--text-xs); color: var(--text-muted); font-weight: 600; margin-bottom: 4px;">Student Explanation / Technical Notes:</div>
+            <p id="rev-modal-explanation" style="font-size: var(--text-xs); line-height: 1.6; white-space: pre-line; color: var(--text-secondary);"></p>
+          </div>
+        </div>
+
+        <!-- Rubric Grading Form -->
+        <form id="evaluation-form">
+          <div style="margin-bottom: var(--space-5);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-3);">
+              <h4 style="font-size: var(--text-sm); font-weight: 700; color: var(--text-primary);">Rubric Evaluation</h4>
+              <div style="font-size: var(--text-sm); font-weight: 700; color: var(--accent-primary);">
+                Total Score: <span id="rev-total-score-badge">0</span> / 100
+              </div>
+            </div>
+            
+            <div id="rubric-criteria-container" style="display: flex; flex-direction: column; gap: var(--space-4);">
+              <!-- Rendered per criterion -->
+            </div>
+          </div>
+
+          <!-- General Feedback -->
+          <div class="form-group">
+            <label class="form-label" for="rev-general-feedback">
+              General Assessment Feedback <span style="color: var(--color-danger);">*</span>
+            </label>
+            <textarea id="rev-general-feedback" class="form-input" rows="4" required
+              placeholder="Provide constructive, detailed feedback on the implementation architecture, code cleanliness, and adherence to requirements..."></textarea>
+          </div>
+
+          <!-- Improvement Suggestions -->
+          <div class="form-group">
+            <label class="form-label" for="rev-improvements">Specific Recommendations & Next Steps</label>
+            <textarea id="rev-improvements" class="form-input" rows="3"
+              placeholder="Suggest advanced topics, refactoring tips, or recommended follow-up challenges..."></textarea>
+          </div>
+
+          <!-- Decision & Visibility -->
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-4); margin-bottom: var(--space-5);">
+            <div class="form-group">
+              <label class="form-label" for="rev-decision">Evaluation Decision <span style="color: var(--color-danger);">*</span></label>
+              <select id="rev-decision" class="form-input" required>
+                <option value="APPROVED">APPROVED (Grants Skill Verification)</option>
+                <option value="CHANGES_REQUESTED">CHANGES_REQUESTED (Allows Re-submission)</option>
+                <option value="REJECTED">REJECTED (Does Not Meet Standards)</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Review Visibility</label>
+              <label class="checkbox-label" style="margin-top: 10px;">
+                <input type="checkbox" id="rev-public-toggle" checked>
+                <span>Make feedback visible on student's public profile</span>
+              </label>
+            </div>
+          </div>
+
+          <div style="display: flex; justify-content: flex-end; gap: var(--space-3); padding-top: var(--space-4); border-top: 1px solid var(--border-subtle);">
+            <button type="button" class="btn btn-secondary" id="rev-cancel-btn">Cancel</button>
+            <button type="submit" class="btn btn-primary" id="rev-submit-btn">
+              <span data-icon="check-circle" data-icon-size="16"></span>
+              <span>Submit Evaluation</span>
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <script src="/js/icons.js"></script>
+  <script src="/js/toast.js"></script>
+  <script src="/js/theme.js"></script>
+  <script src="/js/api.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', async () => {
+      initTheme();
+      replaceIcons();
+
+      const user = await SkillProof.fetchCurrentUser();
+      if (!user) {
+        window.location.href = '/auth.html?step=login';
+        return;
+      }
+
+      SkillProof.renderAppSidebar('mentor');
+      SkillProof.initTopbar();
+      replaceIcons();
+
+      if (user.role !== 'MENTOR' && user.role !== 'ADMIN') {
+        document.getElementById('unauthorized-banner').style.display = 'flex';
+        document.getElementById('mentor-content').style.opacity = '0.4';
+        document.getElementById('mentor-content').style.pointerEvents = 'none';
+        replaceIcons();
+        return;
+      }
+
+      let currentSubmissions = [];
+      let activeSubmission = null;
+      let activeChallenge = null;
+
+      const tbody = document.getElementById('queue-tbody');
+      const emptyState = document.getElementById('queue-empty');
+      const statusFilter = document.getElementById('status-filter');
+      const refreshBtn = document.getElementById('refresh-queue-btn');
+
+      const modal = document.getElementById('review-modal');
+      const modalClose = document.getElementById('rev-modal-close');
+      const cancelBtn = document.getElementById('rev-cancel-btn');
+      const evalForm = document.getElementById('evaluation-form');
+      const criteriaContainer = document.getElementById('rubric-criteria-container');
+      const totalScoreBadge = document.getElementById('rev-total-score-badge');
+
+      modalClose.addEventListener('click', () => modal.classList.remove('open'));
+      cancelBtn.addEventListener('click', () => modal.classList.remove('open'));
+      modal.addEventListener('click', (e) => {
+        if (e.target === modal) modal.classList.remove('open');
+      });
+
+      statusFilter.addEventListener('change', () => loadQueue());
+      refreshBtn.addEventListener('click', () => loadQueue());
+
+      async function loadQueue() {
+        tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; padding: var(--space-6); color: var(--text-secondary);">Loading submission queue...</td></tr>`;
+        emptyState.style.display = 'none';
+
+        try {
+          const statusVal = statusFilter.value;
+          const url = statusVal ? `/api/v1/mentor/submissions?status=${statusVal}&size=50` : '/api/v1/mentor/submissions?size=50';
+          const res = await SkillProof.apiFetch(url);
+          currentSubmissions = (res && res.data && res.data.content) ? res.data.content : [];
+
+          renderQueue(currentSubmissions);
+        } catch (err) {
+          showToast(err.message || 'Failed to load review queue', 'error');
+          tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; padding: var(--space-6); color: var(--color-danger);">Failed to load review queue.</td></tr>`;
+        }
+      }
+
+      function getStatusBadge(status) {
+        switch (status) {
+          case 'APPROVED': return `<span class="badge badge-success">Approved</span>`;
+          case 'CHANGES_REQUESTED': return `<span class="badge badge-warning">Changes Requested</span>`;
+          case 'REJECTED': return `<span class="badge badge-danger">Rejected</span>`;
+          case 'UNDER_REVIEW': return `<span class="badge badge-info">Under Review</span>`;
+          default: return `<span class="badge badge-neutral">Submitted</span>`;
+        }
+      }
+
+      function renderQueue(submissions) {
+        if (!submissions || submissions.length === 0) {
+          tbody.innerHTML = '';
+          emptyState.style.display = 'block';
+          replaceIcons();
+          return;
+        }
+
+        emptyState.style.display = 'none';
+        tbody.innerHTML = submissions.map(sub => {
+          const scoreDisplay = sub.reviewScore != null ? `<strong>${sub.reviewScore}</strong>/100` : '<span style="color:var(--text-muted);">&mdash;</span>';
+          const dateStr = sub.submittedAt ? new Date(sub.submittedAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' }) : '&mdash;';
+          const isPending = sub.status === 'SUBMITTED' || sub.status === 'UNDER_REVIEW';
+
+          return `
+            <tr>
+              <td>
+                <div style="font-weight: 600; color: var(--text-primary);">${sub.studentName}</div>
+                <div style="font-size: var(--text-xs); color: var(--text-secondary);">@${sub.studentUsername}</div>
+              </td>
+              <td>
+                <div style="font-weight: 500;">${sub.challengeTitle}</div>
+              </td>
+              <td>
+                <span class="badge badge-neutral">${sub.skillName}</span>
+              </td>
+              <td>${getStatusBadge(sub.status)}</td>
+              <td style="font-size: var(--text-xs); color: var(--text-secondary);">${dateStr}</td>
+              <td>${scoreDisplay}</td>
+              <td style="text-align: right;">
+                <button class="btn ${isPending ? 'btn-primary' : 'btn-secondary'} btn-sm review-action-btn" data-id="${sub.id}">
+                  <span data-icon="${isPending ? 'edit-3' : 'eye'}" data-icon-size="14"></span>
+                  <span>${isPending ? 'Evaluate' : 'View / Edit'}</span>
+                </button>
+              </td>
+            </tr>
+          `;
+        }).join('');
+
+        replaceIcons();
+
+        document.querySelectorAll('.review-action-btn').forEach(btn => {
+          btn.addEventListener('click', () => {
+            const subId = parseInt(btn.getAttribute('data-id'), 10);
+            openReviewModal(subId);
+          });
+        });
+      }
+
+      async function openReviewModal(submissionId) {
+        activeSubmission = currentSubmissions.find(s => s.id === submissionId);
+        if (!activeSubmission) return;
+
+        document.getElementById('rev-modal-challenge-title').textContent = activeSubmission.challengeTitle;
+        document.getElementById('rev-modal-student-name').textContent = `Submitted by ${activeSubmission.studentName} (@${activeSubmission.studentUsername})`;
+
+        // Build evidence links
+        const evidenceDiv = document.getElementById('rev-modal-evidence');
+        let evidenceHtml = '';
+        if (activeSubmission.repositoryUrl) {
+          evidenceHtml += `
+            <div style="display: flex; align-items: center; gap: var(--space-2);">
+              <span data-icon="github" data-icon-size="16" style="color: var(--text-secondary);"></span>
+              <span style="font-weight: 500;">Repository:</span>
+              <a href="${activeSubmission.repositoryUrl}" target="_blank" rel="noopener noreferrer" style="color: var(--color-primary-light); text-decoration: underline; word-break: break-all;">
+                ${activeSubmission.repositoryUrl}
+              </a>
+            </div>
+          `;
+        }
+        if (activeSubmission.liveDemoUrl) {
+          evidenceHtml += `
+            <div style="display: flex; align-items: center; gap: var(--space-2);">
+              <span data-icon="external-link" data-icon-size="16" style="color: var(--text-secondary);"></span>
+              <span style="font-weight: 500;">Live Demo:</span>
+              <a href="${activeSubmission.liveDemoUrl}" target="_blank" rel="noopener noreferrer" style="color: var(--color-primary-light); text-decoration: underline; word-break: break-all;">
+                ${activeSubmission.liveDemoUrl}
+              </a>
+            </div>
+          `;
+        }
+        if (activeSubmission.artifactFileUrl) {
+          evidenceHtml += `
+            <div style="display: flex; align-items: center; gap: var(--space-2);">
+              <span data-icon="download" data-icon-size="16" style="color: var(--text-secondary);"></span>
+              <span style="font-weight: 500;">Uploaded Archive:</span>
+              <a href="${activeSubmission.artifactFileUrl}" target="_blank" download style="color: var(--color-primary-light); text-decoration: underline;">
+                Download Solution Artifact (${activeSubmission.artifactFileName || 'solution.zip'})
+              </a>
+            </div>
+          `;
+        }
+        evidenceDiv.innerHTML = evidenceHtml || '<div style="color: var(--text-muted); font-size: var(--text-xs);">No external links attached.</div>';
+
+        // Student technical notes
+        const explanationBox = document.getElementById('rev-modal-explanation-box');
+        if (activeSubmission.explanation && activeSubmission.explanation.trim()) {
+          explanationBox.style.display = 'block';
+          document.getElementById('rev-modal-explanation').textContent = activeSubmission.explanation;
+        } else {
+          explanationBox.style.display = 'none';
+        }
+
+        // Fetch challenge rubric
+        try {
+          const chRes = await SkillProof.apiFetch(`/api/v1/challenges/${activeSubmission.challengeId}`);
+          activeChallenge = chRes.data;
+          renderRubricForm(activeChallenge.rubric);
+        } catch (e) {
+          renderFallbackRubric();
+        }
+
+        // Populate existing review values if already graded
+        if (activeSubmission.reviewScore != null) {
+          totalScoreBadge.textContent = activeSubmission.reviewScore;
+        }
+        if (activeSubmission.reviewGeneralFeedback) {
+          document.getElementById('rev-general-feedback').value = activeSubmission.reviewGeneralFeedback;
+        } else {
+          document.getElementById('rev-general-feedback').value = '';
+        }
+        if (activeSubmission.reviewImprovementSuggestions) {
+          document.getElementById('rev-improvements').value = activeSubmission.reviewImprovementSuggestions;
+        } else {
+          document.getElementById('rev-improvements').value = '';
+        }
+        if (activeSubmission.status === 'APPROVED' || activeSubmission.status === 'CHANGES_REQUESTED' || activeSubmission.status === 'REJECTED') {
+          document.getElementById('rev-decision').value = activeSubmission.status;
+        } else {
+          document.getElementById('rev-decision').value = 'APPROVED';
+        }
+
+        modal.classList.add('open');
+        replaceIcons();
+      }
+
+      function renderRubricForm(rubric) {
+        if (!rubric || rubric.length === 0) {
+          renderFallbackRubric();
+          return;
+        }
+
+        criteriaContainer.innerHTML = rubric.map((c, idx) => {
+          const max = c.maxScore || 25;
+          const initialScore = Math.round(max * 0.9);
+
+          return `
+            <div class="rubric-card" style="border: 1px solid var(--border-subtle); padding: var(--space-3) var(--space-4); border-radius: var(--radius-md); background-color: var(--bg-surface-elevated);">
+              <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 6px;">
+                <div>
+                  <div style="font-weight: 600; font-size: var(--text-sm);">${c.criterion}</div>
+                  <div style="font-size: var(--text-xs); color: var(--text-secondary); margin-top: 2px;">${c.description}</div>
+                </div>
+                <div style="display: flex; align-items: center; gap: 4px;">
+                  <input type="number" class="form-input rubric-score-input" data-index="${idx}" data-max="${max}" min="0" max="${max}" value="${initialScore}" style="width: 60px; padding: 4px 6px; text-align: center; font-size: var(--text-sm); font-weight: 600;">
+                  <span style="font-size: var(--text-xs); color: var(--text-muted);">/ ${max}</span>
+                </div>
+              </div>
+              <input type="text" class="form-input rubric-comment-input" data-index="${idx}" placeholder="Optional criterion feedback..." style="font-size: var(--text-xs); padding: 4px 8px; margin-top: 6px;">
+            </div>
+          `;
+        }).join('');
+
+        attachScoreListeners();
+        updateComputedTotal();
+      }
+
+      function renderFallbackRubric() {
+        const defaultCriteria = [
+          { criterion: 'Functional Implementation', description: 'Meets core technical specification requirements', maxScore: 40 },
+          { criterion: 'Architecture & Code Quality', description: 'Clean, structured, and maintainable implementation', maxScore: 30 },
+          { criterion: 'Testing & Verification', description: 'Robust test coverage and validation of edge cases', maxScore: 30 }
+        ];
+        renderRubricForm(defaultCriteria);
+      }
+
+      function attachScoreListeners() {
+        const inputs = document.querySelectorAll('.rubric-score-input');
+        inputs.forEach(input => {
+          input.addEventListener('input', updateComputedTotal);
+        });
+      }
+
+      function updateComputedTotal() {
+        const inputs = document.querySelectorAll('.rubric-score-input');
+        let total = 0;
+        inputs.forEach(input => {
+          const val = parseInt(input.value, 10) || 0;
+          total += val;
+        });
+        totalScoreBadge.textContent = total;
+      }
+
+      // Submit review form
+      evalForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        if (!activeSubmission) return;
+
+        const submitBtn = document.getElementById('rev-submit-btn');
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = `<span>Saving...</span>`;
+
+        try {
+          const decision = document.getElementById('rev-decision').value;
+          const totalScore = parseInt(totalScoreBadge.textContent, 10) || 0;
+          const generalFeedback = document.getElementById('rev-general-feedback').value.trim();
+          const improvementSuggestions = document.getElementById('rev-improvements').value.trim();
+          const isPublic = document.getElementById('rev-public-toggle').checked;
+
+          const scoreInputs = document.querySelectorAll('.rubric-score-input');
+          const commentInputs = document.querySelectorAll('.rubric-comment-input');
+          const criteriaCards = document.querySelectorAll('.rubric-card');
+
+          const scores = [];
+          scoreInputs.forEach((inp, idx) => {
+            const card = criteriaCards[idx];
+            const nameEl = card.querySelector('div[style*="font-weight: 600"]');
+            const criterionName = nameEl ? nameEl.textContent : `Criterion ${idx + 1}`;
+            const score = parseInt(inp.value, 10) || 0;
+            const maxScore = parseInt(inp.getAttribute('data-max'), 10) || 25;
+            const comments = commentInputs[idx] ? commentInputs[idx].value.trim() : '';
+
+            scores.push({
+              criterionName,
+              score,
+              maxScore,
+              comments
+            });
+          });
+
+          const payload = {
+            decision,
+            totalScore,
+            generalFeedback,
+            improvementSuggestions,
+            isPublic,
+            scores
+          };
+
+          await SkillProof.apiFetch(`/api/v1/mentor/submissions/${activeSubmission.id}/reviews`, {
+            method: 'POST',
+            body: payload
+          });
+
+          showToast('Evaluation submitted successfully!', 'success');
+          modal.classList.remove('open');
+          await loadQueue();
+        } catch (err) {
+          showToast(err.message || 'Failed to submit evaluation', 'error');
+        } finally {
+          submitBtn.disabled = false;
+          submitBtn.innerHTML = `
+            <span data-icon="check-circle" data-icon-size="16"></span>
+            <span>Submit Evaluation</span>
+          `;
+          replaceIcons();
+        }
+      });
+
+      // Initial load
+      await loadQueue();
+    });
+  </script>
+</body>
+</html>

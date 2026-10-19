@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Skills Catalogue — SkillProof</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%236366f1' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z'/></svg>">
+  <link rel="stylesheet" href="/css/tokens.css">
+  <link rel="stylesheet" href="/css/main.css">
+</head>
+<body>
+
+  <div class="app-layout">
+    <aside class="sidebar" id="app-sidebar"></aside>
+
+    <div class="app-main">
+      <header class="topbar">
+        <div class="topbar-left">
+          <button class="mobile-menu-btn" id="mobile-menu-toggle" aria-label="Toggle navigation">
+            <span data-icon="menu" data-icon-size="20"></span>
+          </button>
+          <h1 class="page-title-crumb">Skills Catalogue</h1>
+        </div>
+        <div class="topbar-right">
+          <button class="icon-btn theme-toggle-btn" aria-label="Toggle theme"></button>
+        </div>
+      </header>
+
+      <main class="page-container">
+        <!-- Filter Bar -->
+        <div class="card" style="margin-bottom: var(--space-8); padding: var(--space-5);">
+          <div style="display: grid; grid-template-columns: 2fr 1fr 1fr auto; gap: var(--space-4); align-items: center;">
+            <div style="position: relative;">
+              <input type="text" id="filter-search" class="form-control" placeholder="Search competencies by name or topic...">
+            </div>
+            <div>
+              <select id="filter-category" class="form-control">
+                <option value="">All Categories</option>
+              </select>
+            </div>
+            <div>
+              <select id="filter-difficulty" class="form-control">
+                <option value="">All Difficulties</option>
+                <option value="BEGINNER">Beginner</option>
+                <option value="INTERMEDIATE">Intermediate</option>
+                <option value="ADVANCED">Advanced</option>
+              </select>
+            </div>
+            <div>
+              <button class="btn btn-secondary" id="btn-reset-filters">Reset</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Skills Grid -->
+        <div id="skills-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: var(--space-6);">
+          <!-- Dynamic Skill Cards -->
+        </div>
+
+        <!-- Empty State Container -->
+        <div id="skills-empty" style="display: none; margin-top: var(--space-8);">
+          <div class="empty-state">
+            <div class="empty-state-icon"><span data-icon="search" data-icon-size="40"></span></div>
+            <div class="empty-state-title">No matching skills found</div>
+            <div class="empty-state-desc">Try clearing filters or searching for another competency keyword.</div>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <!-- Skill Details Modal -->
+  <div class="modal-backdrop" id="skill-modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <div style="display: flex; align-items: center; gap: var(--space-3);">
+          <div id="modal-skill-icon" style="background-color: var(--accent-subtle); color: var(--accent-text); padding: 8px; border-radius: var(--radius-md);"></div>
+          <div>
+            <h3 id="modal-skill-name" style="font-size: var(--text-lg); font-weight: 700;"></h3>
+            <div style="display: flex; gap: var(--space-2); margin-top: 4px;">
+              <span id="modal-skill-category" class="badge badge-neutral"></span>
+              <span id="modal-skill-difficulty" class="badge badge-neutral"></span>
+            </div>
+          </div>
+        </div>
+        <button class="icon-btn" id="modal-close-btn" style="border: none;">
+          <span data-icon="x" data-icon-size="18"></span>
+        </button>
+      </div>
+
+      <div class="modal-body">
+        <div style="margin-bottom: var(--space-5);">
+          <h4 style="font-size: var(--text-sm); font-weight: 600; color: var(--text-secondary); margin-bottom: var(--space-2); text-transform: uppercase;">Description</h4>
+          <p id="modal-skill-desc" style="font-size: var(--text-sm); color: var(--text-primary); line-height: 1.6;"></p>
+        </div>
+
+        <div style="margin-bottom: var(--space-5);">
+          <h4 style="font-size: var(--text-sm); font-weight: 600; color: var(--text-secondary); margin-bottom: var(--space-2); text-transform: uppercase;">Learning Objectives</h4>
+          <p id="modal-skill-objectives" style="font-size: var(--text-sm); color: var(--text-primary); line-height: 1.6;"></p>
+        </div>
+
+        <!-- Prerequisite Chain -->
+        <div style="margin-bottom: var(--space-5);">
+          <h4 style="font-size: var(--text-sm); font-weight: 600; color: var(--text-secondary); margin-bottom: var(--space-2); text-transform: uppercase;">Prerequisites</h4>
+          <div id="modal-prereqs-list" style="display: flex; flex-direction: column; gap: var(--space-2);"></div>
+        </div>
+
+        <!-- Unlocks -->
+        <div>
+          <h4 style="font-size: var(--text-sm); font-weight: 600; color: var(--text-secondary); margin-bottom: var(--space-2); text-transform: uppercase;">Unlocks Later Competencies</h4>
+          <div id="modal-unlocks-list" style="display: flex; flex-wrap: wrap; gap: var(--space-2);"></div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn btn-outline" id="modal-cancel-btn">Close</button>
+        <button class="btn btn-primary" id="modal-start-btn">Start Pursuing</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="/js/icons.js"></script>
+  <script src="/js/theme.js"></script>
+  <script src="/js/toast.js"></script>
+  <script src="/js/api.js"></script>
+  <script>
+    let activeModalSkillId = null;
+
+    async function loadCategories() {
+      try {
+        const res = await SkillProof.apiFetch('/api/v1/skills/categories');
+        const select = document.getElementById('filter-category');
+        if (res.data) {
+          res.data.forEach(cat => {
+            const opt = document.createElement('option');
+            opt.value = cat;
+            opt.textContent = cat;
+            select.appendChild(opt);
+          });
+        }
+      } catch (e) {}
+    }
+
+    async function loadSkills() {
+      const search = document.getElementById('filter-search').value.trim();
+      const category = document.getElementById('filter-category').value;
+      const difficulty = document.getElementById('filter-difficulty').value;
+
+      const params = new URLSearchParams();
+      if (search) params.set('search', search);
+      if (category) params.set('category', category);
+      if (difficulty) params.set('difficulty', difficulty);
+
+      try {
+        const res = await SkillProof.apiFetch(`/api/v1/skills?${params.toString()}`);
+        const skills = res.data.content;
+        const grid = document.getElementById('skills-grid');
+        const empty = document.getElementById('skills-empty');
+
+        if (skills.length === 0) {
+          grid.innerHTML = '';
+          empty.style.display = 'block';
+          return;
+        }
+
+        empty.style.display = 'none';
+        grid.innerHTML = skills.map(skill => {
+          let statusBadge = '';
+          if (skill.userStatus === 'VERIFIED') {
+            statusBadge = `<span class="badge badge-success"><span data-icon="check" data-icon-size="12"></span> Verified</span>`;
+          } else if (skill.userStatus === 'IN_PROGRESS') {
+            statusBadge = `<span class="badge badge-primary">In Progress (${skill.progressPercent}%)</span>`;
+          } else if (!skill.eligible) {
+            statusBadge = `<span class="badge badge-warning">Prerequisites Needed</span>`;
+          }
+
+          let difficultyBadge = 'badge-neutral';
+          if (skill.difficulty === 'BEGINNER') difficultyBadge = 'badge-neutral';
+          if (skill.difficulty === 'INTERMEDIATE') difficultyBadge = 'badge-primary';
+          if (skill.difficulty === 'ADVANCED') difficultyBadge = 'badge-warning';
+
+          return `
+            <div class="card" style="display: flex; flex-direction: column; justify-content: space-between;">
+              <div>
+                <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: var(--space-3);">
+                  <div style="background-color: var(--accent-subtle); color: var(--accent-text); padding: 8px; border-radius: var(--radius-md);">
+                    ${getIcon(skill.iconName || 'code', 20)}
+                  </div>
+                  <div>${statusBadge}</div>
+                </div>
+
+                <h3 style="font-size: var(--text-base); font-weight: 700; margin-bottom: var(--space-2); color: var(--text-primary);">
+                  ${escapeHtml(skill.name)}
+                </h3>
+
+                <p style="font-size: var(--text-xs); color: var(--text-secondary); line-height: 1.6; margin-bottom: var(--space-4); display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;">
+                  ${escapeHtml(skill.description)}
+                </p>
+              </div>
+
+              <div>
+                <div style="display: flex; justify-content: space-between; align-items: center; font-size: var(--text-xs); color: var(--text-muted); border-top: 1px solid var(--border-subtle); padding-top: var(--space-3); margin-bottom: var(--space-4);">
+                  <span class="badge ${difficultyBadge}">${skill.difficulty}</span>
+                  <span>Est. ${skill.estimatedHours} hrs</span>
+                  <span>${skill.category}</span>
+                </div>
+
+                <div style="display: flex; gap: var(--space-2);">
+                  <button class="btn btn-secondary btn-sm" style="flex: 1;" onclick="openSkillModal(${skill.id})">
+                    <span>Details &amp; Path</span>
+                  </button>
+                  <a href="/challenges.html?skillId=${skill.id}" class="btn btn-outline btn-sm" title="View associated challenges">
+                    ${getIcon('code-2', 16)}
+                  </a>
+                </div>
+              </div>
+            </div>
+          `;
+        }).join('');
+
+      } catch (err) {
+        showToast('Failed to load skills: ' + err.message, 'error');
+      }
+    }
+
+    async function openSkillModal(skillId) {
+      activeModalSkillId = skillId;
+      try {
+        const res = await SkillProof.apiFetch(`/api/v1/skills/${skillId}`);
+        const s = res.data;
+
+        document.getElementById('modal-skill-icon').innerHTML = getIcon(s.iconName || 'code', 24);
+        document.getElementById('modal-skill-name').textContent = s.name;
+        document.getElementById('modal-skill-category').textContent = s.category;
+        document.getElementById('modal-skill-difficulty').textContent = s.difficulty;
+        document.getElementById('modal-skill-desc').textContent = s.description;
+        document.getElementById('modal-skill-objectives').textContent = s.learningObjectives || 'Practical competencies validated through projects.';
+
+        // Prerequisites
+        const prereqList = document.getElementById('modal-prereqs-list');
+        if (s.prerequisites && s.prerequisites.length > 0) {
+          prereqList.innerHTML = s.prerequisites.map(p => `
+            <div style="display: flex; align-items: center; justify-content: space-between; background-color: var(--bg-surface-elevated); padding: var(--space-2) var(--space-3); border-radius: var(--radius-sm); font-size: var(--text-xs);">
+              <span>${escapeHtml(p.name)} (${p.difficulty})</span>
+              ${p.completed ? 
+                `<span class="badge badge-success"><span data-icon="check" data-icon-size="10"></span> Completed</span>` : 
+                `<span class="badge badge-warning">Required</span>`}
+            </div>
+          `).join('');
+        } else {
+          prereqList.innerHTML = `<span style="font-size: var(--text-xs); color: var(--text-muted);">None — this is a foundational entry-level skill.</span>`;
+        }
+
+        // Unlocks
+        const unlocksList = document.getElementById('modal-unlocks-list');
+        if (s.unlockedSkills && s.unlockedSkills.length > 0) {
+          unlocksList.innerHTML = s.unlockedSkills.map(u => `
+            <span class="badge badge-neutral" style="font-size: var(--text-xs);">${escapeHtml(u.name)}</span>
+          `).join('');
+        } else {
+          unlocksList.innerHTML = `<span style="font-size: var(--text-xs); color: var(--text-muted);">Capstone skill.</span>`;
+        }
+
+        const startBtn = document.getElementById('modal-start-btn');
+        if (s.userStatus === 'VERIFIED') {
+          startBtn.textContent = 'Already Verified';
+          startBtn.disabled = true;
+        } else if (s.userStatus === 'IN_PROGRESS') {
+          startBtn.textContent = 'In Progress';
+          startBtn.disabled = true;
+        } else if (!s.eligible) {
+          startBtn.textContent = 'Prerequisites Incomplete';
+          startBtn.disabled = true;
+        } else {
+          startBtn.textContent = 'Start Pursuing Skill';
+          startBtn.disabled = false;
+        }
+
+        document.getElementById('skill-modal').classList.add('open');
+      } catch (err) {
+        showToast('Failed to load skill details: ' + err.message, 'error');
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      await SkillProof.fetchCurrentUser();
+      SkillProof.renderAppSidebar('skills');
+      SkillProof.initTopbar();
+
+      await loadCategories();
+      await loadSkills();
+
+      document.getElementById('filter-search').addEventListener('input', loadSkills);
+      document.getElementById('filter-category').addEventListener('change', loadSkills);
+      document.getElementById('filter-difficulty').addEventListener('change', loadSkills);
+      document.getElementById('btn-reset-filters').addEventListener('click', () => {
+        document.getElementById('filter-search').value = '';
+        document.getElementById('filter-category').value = '';
+        document.getElementById('filter-difficulty').value = '';
+        loadSkills();
+      });
+
+      // Modal close handlers
+      document.getElementById('modal-close-btn').addEventListener('click', () => {
+        document.getElementById('skill-modal').classList.remove('open');
+      });
+      document.getElementById('modal-cancel-btn').addEventListener('click', () => {
+        document.getElementById('skill-modal').classList.remove('open');
+      });
+
+      // Start pursuing button handler
+      document.getElementById('modal-start-btn').addEventListener('click', async () => {
+        if (!activeModalSkillId) return;
+        try {
+          const res = await SkillProof.apiFetch(`/api/v1/skills/${activeModalSkillId}/start`, { method: 'POST' });
+          showToast(res.message, 'success');
+          document.getElementById('skill-modal').classList.remove('open');
+          loadSkills();
+        } catch (err) {
+          showToast(err.message, 'error');
+        }
+      });
+    });
+  </script>
+</body>
+</html>
